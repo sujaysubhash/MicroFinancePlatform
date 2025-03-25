@@ -308,7 +308,7 @@ $conn->close();
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link " href="./index.php">
+        <a class="nav-link collapsed" href="./index.php">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
@@ -398,7 +398,7 @@ $conn->close();
 
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./faq.php">
+        <a class="nav-link active" href="./faq.php">
           <i class="bi bi-question-circle"></i>
           <span>F.A.Q</span>
         </a>

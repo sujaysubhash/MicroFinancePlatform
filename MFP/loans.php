@@ -307,7 +307,7 @@ $conn->close();
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link " href="./index.php">
+        <a class="nav-link collapsed" href="./index.php">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
@@ -327,10 +327,10 @@ $conn->close();
       </li><!-- End Profile Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link active" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-menu-button-wide"></i><span>Loans</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="components-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
           <li>
 
 
@@ -339,7 +339,7 @@ $conn->close();
             </a>
           </li>
 
-          <a href="./loans.php">
+          <a href="./loans.php" class="active">
               <i class="bi bi-circle"></i><span>My Loans</span>
             </a>
           </li>
@@ -358,13 +358,13 @@ $conn->close();
         </a>
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./repayments.php">
+            <a href="./repayment.php">
               <i class="bi bi-circle"></i><span>Repayments</span>
             </a>
           </li>
           <li>
-            <a href="./payment-history.php">
-              <i class="bi bi-circle"></i><span>Payment History</span>
+          <a href="./borrower_payment-history.php">
+          <i class="bi bi-circle"></i><span>Payment History</span>
             </a>
           </li>
           

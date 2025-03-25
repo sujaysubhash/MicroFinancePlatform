@@ -60,6 +60,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apply_loan'])) {
             exit();
         }
 
+        $loan_amount = $_POST['loan_amount']; // Fetch requested loan amount
+        // Insert into loan_application table (Updated to include requested_loan_amount)
+        $insert_loan = "INSERT INTO loan_application (borrower_id, lender_id, borrower, lender_name, interest_rate, requested_loan_amount, status) 
+                VALUES ('$user_id', '$lender_id', '$user_name', '$lender_name', '$interest_rate', '$loan_amount', 'pending')";
+        $conn->query($insert_loan) or die("Error inserting loan: " . $conn->error);
+
+
         // Insert into loan_application table
         $insert_loan = "INSERT INTO loan_application (borrower_id, lender_id, borrower, lender_name, interest_rate, status) 
                         VALUES ('$user_id', '$lender_id', '$user_name', '$lender_name', '$interest_rate', 'pending')";
@@ -351,7 +358,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apply_loan'])) {
 <ul class="sidebar-nav" id="sidebar-nav">
 
   <li class="nav-item">
-    <a class="nav-link " href="./index.php">
+    <a class="nav-link collapsed" href="./index.php">
       <i class="bi bi-grid"></i>
       <span>Dashboard</span>
     </a>
@@ -371,14 +378,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apply_loan'])) {
   </li><!-- End Profile Page Nav -->
 
   <li class="nav-item">
-    <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+    <a class="nav-link active" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
       <i class="bi bi-menu-button-wide"></i><span>Loans</span><i class="bi bi-chevron-down ms-auto"></i>
     </a>
-    <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+    <ul id="components-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
       <li>
 
 
-        <a href="./apply-loan.php">
+        <a href="./apply-loan.php" class="active">
           <i class="bi bi-circle"></i><span>Apply for loan</span>
         </a>
       </li>
@@ -402,7 +409,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apply_loan'])) {
     </a>
     <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
       <li>
-        <a href="./repayments.php">
+        <a href="./repayment.php">
           <i class="bi bi-circle"></i><span>Repayments</span>
         </a>
       </li>
@@ -537,7 +544,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apply_loan'])) {
 
                         <div class="mb-3">
                           <label for="loan_amount" class="form-label">Loan Amount</label>
-                          <input type="number" class="form-control" name="loan_amount" id="loan_amount_<?php echo $row['id']; ?>" min="1" max="<?php echo $row['available_funds']; ?>" required>
+                          <input type="number" class="form-control" name="loan_amount" id="loan_amount_<?php echo $row['id']; ?>" 
+                          min="1" max="<?php echo $row['available_funds']; ?>" required>
                         </div>
 
                         <button type="submit" name="apply_loan" class="btn btn-success">Submit Loan Application</button>

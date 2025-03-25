@@ -372,8 +372,8 @@ $conn->close();
         </a>
       </li>
       <li>
-        <a href="./payment-history.php">
-          <i class="bi bi-circle"></i><span>Payment History</span>
+      <a href="./borrower_payment-history.php">
+      <i class="bi bi-circle"></i><span>Payment History</span>
         </a>
       </li>
       

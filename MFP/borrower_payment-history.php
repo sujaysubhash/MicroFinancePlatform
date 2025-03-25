@@ -327,7 +327,7 @@ $conn->close();
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./index.php">
+        <a class="nav-link " href="./index.php">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
@@ -350,11 +350,11 @@ $conn->close();
         <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-menu-button-wide"></i><span>Loans</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="components-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
+        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
 
 
-            <a href="./apply-loan.php" >
+            <a href="./apply-loan.php">
               <i class="bi bi-circle"></i><span>Apply for loan</span>
             </a>
           </li>
@@ -364,7 +364,7 @@ $conn->close();
             </a>
           </li>
 
-          <a href="./repayment.php" class="active">
+          <a href="./repayment.php">
               <i class="bi bi-circle"></i><span>Repayments</span>
             </a>
           </li>
@@ -373,18 +373,18 @@ $conn->close();
       </li><!-- End Components Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link active" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-journal-text"></i><span>Transactions</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="forms-nav" class="nav-content active" data-bs-parent="#sidebar-nav">
           <li>
             <a href="./repayment.php">
               <i class="bi bi-circle"></i><span>Repayments</span>
             </a>
           </li>
           <li>
-          <a href="./borrower_payment-history.php">
-          <i class="bi bi-circle"></i><span>Payment History</span>
+            <a href="./borrower_payment-history.php" class="active">
+              <i class="bi bi-circle active"></i><span>Payment History</span>
             </a>
           </li>
           
@@ -442,57 +442,54 @@ $conn->close();
   </aside><!-- End Sidebar-->
 
   <main id="main" class="main">
-  <div class="container my-5">
-    <h2 class="text-center mb-4">Loan Repayment Portal - MFP</h2>
-    <div class="row">
-      <div class="col-lg-8 mb-4">
-        <div class="card mb-4 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Auto Loan Payment</h5>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="autoPaymentSwitch" onchange="toggleAutoPayment(this)">
-              <label class="form-check-label" for="autoPaymentSwitch">Enable Auto Payment</label>
-            </div>
-            <p class="mt-2 text-muted">Auto payment will deduct loan amount from wallet at regular intervals.</p>
-          </div>
-        </div>
+  <div class="container mt-5">
+        <h2 class="text-center">Repayment History</h2>
         
-        <div class="card shadow-sm mb-4">
-          <div class="card-body">
-            <h5 class="card-title">Manual Loan Repayment</h5>
-            <form id="manualPaymentForm">
-              <div class="mb-3">
-                <label for="repaymentAmount" class="form-label">Enter Amount to Pay</label>
-                <input type="number" class="form-control" id="repaymentAmount" placeholder="₹ Amount" required>
-              </div>
-              <button type="button" class="btn btn-success" onclick="manualPayment()">Transfer to Lender</button>
-            </form>
-            <div id="paymentStatus" class="mt-3"></div>
-          </div>
-        </div>
-        
-        <div class="card shadow-sm mb-4">
-          <div class="card-body">
-            <h5 class="card-title">Add Money to Wallet</h5>
-            <div class="input-group">
-              <input type="number" id="addAmount" class="form-control" placeholder="Enter amount to add">
-              <button class="btn btn-primary" onclick="addToWallet()">Add to Wallet</button>
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Loan Repayment Summary</h5>
+                <p><strong>Total Loan Duration:</strong> 3 Months</p>
+                <p><strong>Paid Installments:</strong> 1</p>
+                <p><strong>Remaining Installments:</strong> 2</p>
+                
+                <div class="progress">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 33%" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100">33% Paid</div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-      
-      <div class="col-lg-4">
-        <div class="card sticky-aside shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Current Wallet Balance</h5>
-            <p class="fs-4 text-success mb-0">₹ <span id="walletBalance"><?php echo number_format($wallet_balance, 2); ?></span></p>
-            <p class="text-muted">This balance will be used for loan repayments.</p>
-          </div>
-        </div>
-      </div>
+
+        <table class="table table-bordered mt-4">
+            <thead class="table-dark">
+                <tr>
+                    <th>Month</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>January</td>
+                    <td>₹5000</td>
+                    <td><span class="badge bg-success">Paid</span></td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>February</td>
+                    <td>₹5000</td>
+                    <td><span class="badge bg-warning text-dark">Pending</span></td>
+                    <td><button class="btn btn-primary btn-sm">Pay Now</button></td>
+                </tr>
+                <tr>
+                    <td>March</td>
+                    <td>₹5000</td>
+                    <td><span class="badge bg-warning text-dark">Pending</span></td>
+                    <td><button class="btn btn-primary btn-sm">Pay Now</button></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-  </div>
+    
 </main>
 
   <!-- ======= Footer ======= -->
@@ -515,45 +512,6 @@ $conn->close();
   <script src="assets/vendor/tinymce/tinymce.min.js"></script>
   <script src="assets/vendor/php-email-form/validate.js"></script>
 
-  <script>
-function updateWalletDisplay(amount) {
-    document.getElementById('walletBalance').innerText = parseFloat(amount).toFixed(2);
-}
-
-function addToWallet() {
-    const amount = parseFloat(document.getElementById('addAmount').value);
-    if (!isNaN(amount) && amount > 0) {
-        fetch('update_wallet.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'action=add&amount=' + amount
-        })
-        .then(response => response.json())
-        .then(data => updateWalletDisplay(data.new_balance));
-        document.getElementById('addAmount').value = '';
-    }
-}
-
-function manualPayment() {
-    const amount = parseFloat(document.getElementById('repaymentAmount').value);
-    if (amount > 0) {
-        fetch('update_wallet.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'action=deduct&amount=' + amount
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                updateWalletDisplay(data.new_balance);
-                document.getElementById('paymentStatus').innerHTML = `<div class="alert alert-success">₹${amount} successfully transferred to the lender.</div>`;
-            } else {
-                document.getElementById('paymentStatus').innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
-            }
-        });
-    }
-}
-</script>
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>

@@ -46,8 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                       $_SESSION['user_role'] = $user['role']; // Store role in session
                       $_SESSION['user_email'] = $user['email'];
                       // Redirect to index.php
-                      header("Location: index.php");
-                      exit();
+                     // Redirect based on role
+                    if ($user['role'] === 'Admin') {
+                        header("Location: admin_home.php"); // Redirect to admin dashboard
+                    } else {
+                        header("Location: index.php"); // Redirect to normal user dashboard
+                    }
+                    exit();
                       
                 } else {
                     $response_message = "Invalid email or password.";

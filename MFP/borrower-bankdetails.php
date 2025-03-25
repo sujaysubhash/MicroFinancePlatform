@@ -350,11 +350,11 @@ $conn->close();
         <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-menu-button-wide"></i><span>Loans</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="components-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
+        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
 
 
-            <a href="./apply-loan.php" >
+            <a href="./apply-loan.php">
               <i class="bi bi-circle"></i><span>Apply for loan</span>
             </a>
           </li>
@@ -364,7 +364,7 @@ $conn->close();
             </a>
           </li>
 
-          <a href="./repayment.php" class="active">
+          <a href="./repayment.php">
               <i class="bi bi-circle"></i><span>Repayments</span>
             </a>
           </li>
@@ -378,13 +378,13 @@ $conn->close();
         </a>
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./repayment.php">
+            <a href="./repayments.php">
               <i class="bi bi-circle"></i><span>Repayments</span>
             </a>
           </li>
           <li>
-          <a href="./borrower_payment-history.php">
-          <i class="bi bi-circle"></i><span>Payment History</span>
+            <a href="./payment-history.php">
+              <i class="bi bi-circle"></i><span>Payment History</span>
             </a>
           </li>
           
@@ -395,14 +395,14 @@ $conn->close();
         <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-bar-chart"></i><span>Profile</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="charts-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
           <li>
             <a href="./profile.php">
               <i class="bi bi-circle"></i><span>Personal Details</span>
             </a>
           </li>
           <li>
-            <a href="./borrower-bankdetails.php">
+            <a href="./borrower-bankdetails.php" class="active">
               <i class="bi bi-circle"></i><span>Bank Details</span>
             </a>
           </li>
@@ -442,57 +442,75 @@ $conn->close();
   </aside><!-- End Sidebar-->
 
   <main id="main" class="main">
-  <div class="container my-5">
-    <h2 class="text-center mb-4">Loan Repayment Portal - MFP</h2>
-    <div class="row">
-      <div class="col-lg-8 mb-4">
-        <div class="card mb-4 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Auto Loan Payment</h5>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="autoPaymentSwitch" onchange="toggleAutoPayment(this)">
-              <label class="form-check-label" for="autoPaymentSwitch">Enable Auto Payment</label>
-            </div>
-            <p class="mt-2 text-muted">Auto payment will deduct loan amount from wallet at regular intervals.</p>
-          </div>
+  <div class="container mt-5">
+        <h2 class="text-center mb-4">Borrower Bank Details</h2>
+        <div class="card shadow p-4">
+            <h5 class="card-title">Your Bank Information</h5>
+            <table class="table table-striped mt-3">
+                <tbody>
+                    <tr>
+                        <th>Bank Name</th>
+                        <td id="bankName">State Bank of India</td>
+                    </tr>
+                    <tr>
+                        <th>Account Number</th>
+                        <td id="accountNumber">XXXX-XXXX-XXXX-1234</td>
+                    </tr>
+                    <tr>
+                        <th>IFSC Code</th>
+                        <td id="ifscCode">SBIN0001234</td>
+                    </tr>
+                    <tr>
+                        <th>Account Holder Name</th>
+                        <td id="accountHolder">John Doe</td>
+                    </tr>
+                    <tr>
+                        <th>Branch Name</th>
+                        <td id="branchName">Mumbai Main Branch</td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateBankModal">Update Bank Details</button>
         </div>
-        
-        <div class="card shadow-sm mb-4">
-          <div class="card-body">
-            <h5 class="card-title">Manual Loan Repayment</h5>
-            <form id="manualPaymentForm">
-              <div class="mb-3">
-                <label for="repaymentAmount" class="form-label">Enter Amount to Pay</label>
-                <input type="number" class="form-control" id="repaymentAmount" placeholder="₹ Amount" required>
-              </div>
-              <button type="button" class="btn btn-success" onclick="manualPayment()">Transfer to Lender</button>
-            </form>
-            <div id="paymentStatus" class="mt-3"></div>
-          </div>
-        </div>
-        
-        <div class="card shadow-sm mb-4">
-          <div class="card-body">
-            <h5 class="card-title">Add Money to Wallet</h5>
-            <div class="input-group">
-              <input type="number" id="addAmount" class="form-control" placeholder="Enter amount to add">
-              <button class="btn btn-primary" onclick="addToWallet()">Add to Wallet</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="col-lg-4">
-        <div class="card sticky-aside shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Current Wallet Balance</h5>
-            <p class="fs-4 text-success mb-0">₹ <span id="walletBalance"><?php echo number_format($wallet_balance, 2); ?></span></p>
-            <p class="text-muted">This balance will be used for loan repayments.</p>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+    
+    <!-- Update Bank Details Modal -->
+    <div class="modal fade" id="updateBankModal" tabindex="-1" aria-labelledby="updateBankModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateBankModalLabel">Update Bank Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateBankForm">
+                        <div class="mb-3">
+                            <label class="form-label">Bank Name</label>
+                            <input type="text" class="form-control" id="newBankName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Account Number</label>
+                            <input type="text" class="form-control" id="newAccountNumber" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">IFSC Code</label>
+                            <input type="text" class="form-control" id="newIfscCode" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Account Holder Name</label>
+                            <input type="text" class="form-control" id="newAccountHolder" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Branch Name</label>
+                            <input type="text" class="form-control" id="newBranchName" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
 </main>
 
   <!-- ======= Footer ======= -->
@@ -515,45 +533,6 @@ $conn->close();
   <script src="assets/vendor/tinymce/tinymce.min.js"></script>
   <script src="assets/vendor/php-email-form/validate.js"></script>
 
-  <script>
-function updateWalletDisplay(amount) {
-    document.getElementById('walletBalance').innerText = parseFloat(amount).toFixed(2);
-}
-
-function addToWallet() {
-    const amount = parseFloat(document.getElementById('addAmount').value);
-    if (!isNaN(amount) && amount > 0) {
-        fetch('update_wallet.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'action=add&amount=' + amount
-        })
-        .then(response => response.json())
-        .then(data => updateWalletDisplay(data.new_balance));
-        document.getElementById('addAmount').value = '';
-    }
-}
-
-function manualPayment() {
-    const amount = parseFloat(document.getElementById('repaymentAmount').value);
-    if (amount > 0) {
-        fetch('update_wallet.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'action=deduct&amount=' + amount
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                updateWalletDisplay(data.new_balance);
-                document.getElementById('paymentStatus').innerHTML = `<div class="alert alert-success">₹${amount} successfully transferred to the lender.</div>`;
-            } else {
-                document.getElementById('paymentStatus').innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
-            }
-        });
-    }
-}
-</script>
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>

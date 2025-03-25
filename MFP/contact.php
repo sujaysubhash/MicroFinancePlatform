@@ -284,7 +284,7 @@ $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
 <ul class="sidebar-nav" id="sidebar-nav">
 
   <li class="nav-item">
-    <a class="nav-link " href="./index.php">
+    <a class="nav-link collapsed" href="./index.php">
       <i class="bi bi-grid"></i>
       <span>Dashboard</span>
     </a>
@@ -340,7 +340,7 @@ $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
         </a>
       </li>
       <li>
-        <a href="./payment-history.php">
+        <a href="./borrower_payment-history.php">
           <i class="bi bi-circle"></i><span>Payment History</span>
         </a>
       </li>
@@ -381,7 +381,7 @@ $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
   </li><!-- End F.A.Q Page Nav -->
 
   <li class="nav-item">
-    <a class="nav-link collapsed" href="./contact.php">
+    <a class="nav-link active" href="./contact.php">
       <i class="bi bi-envelope"></i>
       <span>Contact</span>
     </a>

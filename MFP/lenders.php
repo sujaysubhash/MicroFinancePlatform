@@ -304,7 +304,7 @@ $result = $conn->query($sql);
 <ul class="sidebar-nav" id="sidebar-nav">
 
   <li class="nav-item">
-    <a class="nav-link " href="./index.php">
+    <a class="nav-link collapsed" href="./index.php">
       <i class="bi bi-grid"></i>
       <span>Dashboard</span>
     </a>
@@ -317,7 +317,7 @@ $result = $conn->query($sql);
   </li><!-- End Profile Page Nav -->
 
   <li class="nav-item">
-    <a class="nav-link collapsed" href="./lenders.php">
+    <a class="nav-link active" href="./lenders.php">
       <i class="bi bi-person"></i>
       <span>Lenders</span>
     </a>
@@ -355,13 +355,13 @@ $result = $conn->query($sql);
     </a>
     <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
       <li>
-        <a href="./repayments.php">
+        <a href="./repayment.php">
           <i class="bi bi-circle"></i><span>Repayments</span>
         </a>
       </li>
       <li>
-        <a href="./payment-history.php">
-          <i class="bi bi-circle"></i><span>Payment History</span>
+      <a href="./borrower_payment-history.php">
+        <i class="bi bi-circle"></i><span>Payment History</span>
         </a>
       </li>
       
