@@ -39,7 +39,7 @@ $result = $conn->query($sql);
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Dashboard -MFP</title>
+  <title>Assistance</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
@@ -166,7 +166,7 @@ $result = $conn->query($sql);
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link active" href="./admin_home.php">
+        <a class="nav-link collapsed" href="./admin_home.php">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
@@ -222,7 +222,7 @@ $result = $conn->query($sql);
       </li><!-- End F.A.Q Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./admin_assistance.php">
+        <a class="nav-link active" href="./admin_assistance.php">
           <i class="bi bi-envelope"></i>
           <span>Assistance</span>
         </a>
@@ -240,41 +240,38 @@ $result = $conn->query($sql);
   </aside><!-- End Sidebar-->
 
   <main id="main" class="main">
-  <div class="pagetitle">
-    <h1 class = "text-center">System Lenders</h1>
-  </div><!-- End Page Title -->
+        
+  <div class="container mt-5">
+    <h2 class="text-center mb-4">Lender/Borrower Messages</h2>
 
-  <section class="section">
-    <div class="row">
-      <?php
-      // Check if any records exist
-      if ($result->num_rows > 0) {
-          while ($row = $result->fetch_assoc()) {
-              ?>
-              <!-- Lender Card -->
-              <div class="col-lg-4 col-md-6">
-                <div class="card shadow-sm border-0 rounded">
-                  <div class="card-body">
-                    <h5 class="card-title text-primary"><?php echo htmlspecialchars($row['name']); ?></h5>
-                    <p class="card-text">
-                      <strong>Interest Rate:</strong> <?php echo htmlspecialchars($row['interest_rate']); ?>%<br>
-                      <strong>Loan Amount:</strong> ₹<?php echo number_format($row['available_funds']); ?><br>
-                      <strong>Experience:</strong> <?php echo htmlspecialchars($row['experience']); ?> years<br>
-                     
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <?php
-          }
-      } else {
-          echo "<p>No lenders found.</p>";
-      }
-
-      // Close connection at the end
-      $conn->close();
-      ?>
+    <div class="card shadow p-4">
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>User Name</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>John Doe</td>
+                    <td>johndoe@example.com</td>
+                    <td>Loan Inquiry</td>
+                    <td>Need details about loan interest rates.</td>
+                </tr>
+                <tr>
+                    <td>Jane Smith</td>
+                    <td>janesmith@example.com</td>
+                    <td>Repayment Options</td>
+                    <td>Looking for flexible repayment plans.</td>
+                </tr>
+                <!-- More messages will be displayed here -->
+            </tbody>
+        </table>
     </div>
+</div>
   </section>
 </main><!-- End #main -->
 
@@ -302,6 +299,27 @@ $result = $conn->query($sql);
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
 
+  <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let highlightedRow = null; // Track the highlighted row
+
+            document.querySelectorAll(".highlight-btn").forEach(button => {
+                button.addEventListener("click", function() {
+                    if (highlightedRow) {
+                        highlightedRow.classList.remove("table-warning");
+                        highlightedRow.querySelector(".highlight-btn").textContent = "Highlight";
+                    }
+
+                    let row = this.closest("tr");
+                    row.classList.add("table-warning");
+                    this.textContent = "Highlighted";
+                    
+                    highlightedRow = row;
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>
+

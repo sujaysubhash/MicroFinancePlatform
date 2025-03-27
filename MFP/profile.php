@@ -316,7 +316,7 @@ $conn->close();
 <ul class="sidebar-nav" id="sidebar-nav">
 
   <li class="nav-item">
-    <a class="nav-link " href="./index.php">
+    <a class="nav-link collapsed" href="./index.php">
       <i class="bi bi-grid"></i>
       <span>Dashboard</span>
     </a>
@@ -343,7 +343,7 @@ $conn->close();
       <li>
 
 
-        <a href="./appy-loan.php">
+        <a href="./apply-loan.php">
           <i class="bi bi-circle"></i><span>Apply for loan</span>
         </a>
       </li>
@@ -367,7 +367,7 @@ $conn->close();
     </a>
     <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
       <li>
-        <a href="./repayments.php">
+        <a href="./repayment.php">
           <i class="bi bi-circle"></i><span>Repayments</span>
         </a>
       </li>
@@ -381,12 +381,12 @@ $conn->close();
   </li><!-- End Forms Nav -->
 
   <li class="nav-item">
-    <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
+    <a class="nav-link active" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
       <i class="bi bi-bar-chart"></i><span>Profile</span><i class="bi bi-chevron-down ms-auto"></i>
     </a>
-    <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+    <ul id="charts-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
       <li>
-        <a href="./profile.php">
+        <a href="./profile.php" class="active">
           <i class="bi bi-circle"></i><span>Personal Details</span>
         </a>
       </li>

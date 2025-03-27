@@ -222,7 +222,7 @@ $result = $conn->query($sql);
       </li><!-- End F.A.Q Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./admin_assistance.php">
+        <a class="nav-link collapsed" href="./contact.php">
           <i class="bi bi-envelope"></i>
           <span>Assistance</span>
         </a>
@@ -240,40 +240,36 @@ $result = $conn->query($sql);
   </aside><!-- End Sidebar-->
 
   <main id="main" class="main">
-  <div class="pagetitle">
-    <h1 class = "text-center">System Lenders</h1>
-  </div><!-- End Page Title -->
-
-  <section class="section">
-    <div class="row">
-      <?php
-      // Check if any records exist
-      if ($result->num_rows > 0) {
-          while ($row = $result->fetch_assoc()) {
-              ?>
-              <!-- Lender Card -->
-              <div class="col-lg-4 col-md-6">
-                <div class="card shadow-sm border-0 rounded">
-                  <div class="card-body">
-                    <h5 class="card-title text-primary"><?php echo htmlspecialchars($row['name']); ?></h5>
-                    <p class="card-text">
-                      <strong>Interest Rate:</strong> <?php echo htmlspecialchars($row['interest_rate']); ?>%<br>
-                      <strong>Loan Amount:</strong> ₹<?php echo number_format($row['available_funds']); ?><br>
-                      <strong>Experience:</strong> <?php echo htmlspecialchars($row['experience']); ?> years<br>
-                     
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <?php
-          }
-      } else {
-          echo "<p>No lenders found.</p>";
-      }
-
-      // Close connection at the end
-      $conn->close();
-      ?>
+        
+  <div class="container mt-4">
+        <h2 class="mb-4">Lender Reviews Management</h2>
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Borrower Name</th>
+                    <th>Lender</th>
+                    <th>Review</th>
+                    <th>Rating</th>
+                    <th>Highlight</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Don Lee</td>
+                    <td>John Doe</td>
+                    <td>Excellent service and very supportive.</td>
+                    <td>4.8</td>
+                    <td><button class="btn btn-success btn-sm highlight-btn">Highlight</button></td>
+                </tr>
+                <tr>
+                    <td>Will Smith</td>
+                    <td>Jane Smith</td>
+                    <td>Quick and easy loan process.</td>
+                    <td>4.5</td>
+                    <td><button class="btn btn-success btn-sm highlight-btn">Highlight</button></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
   </section>
 </main><!-- End #main -->
@@ -302,6 +298,27 @@ $result = $conn->query($sql);
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
 
+  <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let highlightedRow = null; // Track the highlighted row
+
+            document.querySelectorAll(".highlight-btn").forEach(button => {
+                button.addEventListener("click", function() {
+                    if (highlightedRow) {
+                        highlightedRow.classList.remove("table-warning");
+                        highlightedRow.querySelector(".highlight-btn").textContent = "Highlight";
+                    }
+
+                    let row = this.closest("tr");
+                    row.classList.add("table-warning");
+                    this.textContent = "Highlighted";
+                    
+                    highlightedRow = row;
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>
+

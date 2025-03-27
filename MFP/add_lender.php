@@ -13,24 +13,72 @@ $user_name = $_SESSION['user_name'] ?? 'Guest';
 $user_role = $_SESSION['user_role'] ?? 'User'; // Default role if not set
 $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
 
-// Database configuration
 $host = "localhost";
 $dbname = "mfp_database";
 $username = "root";
 $password = "";
 
-// Create connection
+// Create a connection
 $conn = new mysqli($host, $username, $password, $dbname);
 
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+    
+// Initialize response message
+$response_message = "";
 
-// SQL query to fetch lender details
-$sql = "SELECT id, name, interest_rate, available_funds, experience, rating FROM lenders";
-$result = $conn->query($sql);
+// Check if the form is submitted
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = $_POST['name'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+    $certificate_blob = NULL;
+    $role = "Lender"; // Default role
+
+    if (empty($name) || empty($email) || empty($password) || empty($confirm_password)) {
+        $response_message = "All fields are required.";
+    } elseif ($password !== $confirm_password) {
+        $response_message = "Passwords do not match.";
+    } else {
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        
+        if (isset($_FILES['non_criminal_cert']) && $_FILES['non_criminal_cert']['size'] > 0) {
+            $file_type = $_FILES["non_criminal_cert"]["type"];
+            $allowed_types = ["application/pdf", "image/png", "image/jpeg"];
+
+            if (in_array($file_type, $allowed_types)) {
+                $certificate_blob = file_get_contents($_FILES["non_criminal_cert"]["tmp_name"]);
+            } else {
+                $response_message = "Invalid file type. Only PDF, PNG, and JPEG allowed.";
+            }
+        }
+
+        $sql = "INSERT INTO users (name, email, password,role, non_criminal_cert) VALUES (?,?, ?, ?, ?)";
+$stmt = $conn->prepare($sql);
+
+if ($stmt) {
+    $stmt->bind_param("sssss", $name, $email, $hashed_password,$role, $certificate_blob);
+    $stmt->send_long_data(4, $certificate_blob); // Correct index (0-based)
+
+    if ($stmt->execute()) {
+        $response_message = "Lender added successfully!";
+    } else {
+        $response_message = "Error: " . $stmt->error;
+    }
+
+    $stmt->close();
+} else {
+    $response_message = "Error preparing statement: " . $conn->error;
+}
+
+    }
+}
+$conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -215,7 +263,7 @@ $result = $conn->query($sql);
 
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./admin_reviews.php">
+        <a class="nav-link collapsed" href="./faq.php">
           <i class="bi bi-question-circle"></i>
           <span>Reviews</span>
         </a>
@@ -240,41 +288,37 @@ $result = $conn->query($sql);
   </aside><!-- End Sidebar-->
 
   <main id="main" class="main">
-  <div class="pagetitle">
-    <h1 class = "text-center">System Lenders</h1>
-  </div><!-- End Page Title -->
+  <div class="container mt-5">
+    <h2 class="text-center mb-4">Lender/Borrower Messages</h2>
 
-  <section class="section">
-    <div class="row">
-      <?php
-      // Check if any records exist
-      if ($result->num_rows > 0) {
-          while ($row = $result->fetch_assoc()) {
-              ?>
-              <!-- Lender Card -->
-              <div class="col-lg-4 col-md-6">
-                <div class="card shadow-sm border-0 rounded">
-                  <div class="card-body">
-                    <h5 class="card-title text-primary"><?php echo htmlspecialchars($row['name']); ?></h5>
-                    <p class="card-text">
-                      <strong>Interest Rate:</strong> <?php echo htmlspecialchars($row['interest_rate']); ?>%<br>
-                      <strong>Loan Amount:</strong> ₹<?php echo number_format($row['available_funds']); ?><br>
-                      <strong>Experience:</strong> <?php echo htmlspecialchars($row['experience']); ?> years<br>
-                     
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <?php
-          }
-      } else {
-          echo "<p>No lenders found.</p>";
-      }
-
-      // Close connection at the end
-      $conn->close();
-      ?>
+    <div class="card shadow p-4">
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>User Name</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>John Doe</td>
+                    <td>johndoe@example.com</td>
+                    <td>Loan Inquiry</td>
+                    <td>Need details about loan interest rates.</td>
+                </tr>
+                <tr>
+                    <td>Jane Smith</td>
+                    <td>janesmith@example.com</td>
+                    <td>Repayment Options</td>
+                    <td>Looking for flexible repayment plans.</td>
+                </tr>
+                <!-- More messages will be displayed here -->
+            </tbody>
+        </table>
     </div>
+</div>
   </section>
 </main><!-- End #main -->
 

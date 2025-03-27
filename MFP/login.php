@@ -36,24 +36,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user = $result->fetch_assoc();
 
                 if ($user && password_verify($password, $user['password'])) {
-                    $response_message = "Login successful! Welcome " . htmlspecialchars($user['name']) . ".";
-                     // Start a session
-                      session_start();
-                      $_SESSION['user_id'] = $user['id'];
-                      $_SESSION['user_name'] = $user['name'];
-                      $_SESSION['user_id'] = $user['id'];
-                      $_SESSION['user_name'] = $user['name'];
-                      $_SESSION['user_role'] = $user['role']; // Store role in session
-                      $_SESSION['user_email'] = $user['email'];
-                      // Redirect to index.php
-                     // Redirect based on role
+                    session_start();
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_name'] = $user['name'];
+                    $_SESSION['user_role'] = $user['role'];
+                    $_SESSION['user_email'] = $user['email'];
+
                     if ($user['role'] === 'Admin') {
-                        header("Location: admin_home.php"); // Redirect to admin dashboard
-                    } else {
-                        header("Location: index.php"); // Redirect to normal user dashboard
+                        header("Location: admin_home.php");
+                    } else if ($user['role'] === 'Lender') {
+                        header("Location: lender_home.php");
+                    }
+                    
+                    else {
+                        header("Location: index.php");
                     }
                     exit();
-                      
                 } else {
                     $response_message = "Invalid email or password.";
                 }
@@ -64,51 +62,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
         }
     } elseif ($action === 'register') {
-         // Registration logic
-    $name = $_POST['name'] ?? '';
-    $confirm_password = $_POST['confirm_password'] ?? '';
-    $role = $_POST['role'] ?? '';
-
-    if (empty($name) || empty($email) || empty($password) || empty($confirm_password) || empty($role)) {
-        $response_message = "All fields are required.";
-    } elseif ($password !== $confirm_password) {
-        $response_message = "Passwords do not match.";
-    } else {
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-        // Insert user into the users table
-        $sql = "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-
-        if ($stmt) {
-            $stmt->bind_param("ssss", $name, $email, $hashed_password, $role);
-
-            if ($stmt->execute()) {
-                $user_id = $stmt->insert_id; // Get the inserted user's ID
-
-                // If the role is "borrower", also insert into the borrower table
-                if ($role === "borrower") {
-                    $borrower_sql = "INSERT INTO borrower (user_id, name, email) VALUES (?, ?, ?)";
-                    $borrower_stmt = $conn->prepare($borrower_sql);
-                    
-                    if ($borrower_stmt) {
-                        $borrower_stmt->bind_param("iss", $user_id, $name, $email);
-                        $borrower_stmt->execute();
-                        $borrower_stmt->close();
-                    }
-                }
-
-                $response_message = "Registration successful! You can now log in.";
-            } else {
-                $response_message = "Error: " . $stmt->error;
-            }
-
-            $stmt->close();
+        $name = $_POST['name'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
+        $role = $_POST['role'] ?? '';
+        $certificate_blob = NULL;
+    
+        if (empty($name) || empty($email) || empty($password) || empty($confirm_password) || empty($role)) {
+            $response_message = "All fields are required.";
+        } elseif ($password !== $confirm_password) {
+            $response_message = "Passwords do not match.";
         } else {
-            $response_message = "Error preparing statement: " . $conn->error;
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    
+            if ($role === "Lender" && isset($_FILES['non_criminal_cert']) && $_FILES['non_criminal_cert']['size'] > 0) {
+                $file_type = $_FILES["non_criminal_cert"]["type"];
+                $allowed_types = ["application/pdf", "image/png", "image/jpeg"];
+    
+                if (in_array($file_type, $allowed_types)) {
+                    $certificate_blob = file_get_contents($_FILES["non_criminal_cert"]["tmp_name"]);
+                } else {
+                    $response_message = "Invalid file type. Only PDF, PNG, and JPEG allowed.";
+                }
+            }
+    
+            $sql = "INSERT INTO users (name, email, password, role, non_criminal_cert) VALUES (?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+
+           
+
+    
+            if ($stmt) {
+                $stmt->bind_param("sssss", $name, $email, $hashed_password, $role, $certificate_blob);
+                $stmt->send_long_data(4, $certificate_blob); // Send file as BLOB
+    
+                if ($stmt->execute()) {
+                    $user_id = $stmt->insert_id;
+    
+                    if ($role === "borrower") {
+                        $borrower_sql = "INSERT INTO borrower (user_id, name, email) VALUES (?, ?, ?)";
+                        $borrower_stmt = $conn->prepare($borrower_sql);
+    
+                        if ($borrower_stmt) {
+                            $borrower_stmt->bind_param("iss", $user_id, $name, $email);
+                            $borrower_stmt->execute();
+                            $borrower_stmt->close();
+                        }
+                    }
+    
+                    $response_message = "Registration successful! You can now log in.";
+                } else {
+                    $response_message = "Error: " . $stmt->error;
+                }
+    
+                $stmt->close();
+            } else {
+                $response_message = "Error preparing statement: " . $conn->error;
+            }
         }
     }
-    }
+    
 }
 
 $conn->close();
@@ -163,7 +175,6 @@ $conn->close();
             <select id="role" name="role" class="form-control">
                 <option value="borrower">Borrower</option>
                 <option value="lender">Lender</option>
-                <option value="admin">Administrator</option>
             </select>
         </div>
 
@@ -188,6 +199,11 @@ $conn->close();
                 <input type="password" id="confirm-password" name="confirm_password" class="form-control" placeholder="Confirm your password">
             </div>
         </div>
+
+        <div id="cert-upload-field" style="display: none;">
+            <label>Upload Non-Criminal Certificate:</label>
+            <input type="file" name="non_criminal_cert">
+        </div><br>
 
         <button type="submit" class="btn btn-primary w-100" id="submit-button">Login</button>
         <button type="button" class="btn btn-link w-100 mt-2" id="toggle-form">Switch to Registration</button>
@@ -216,6 +232,16 @@ $conn->close();
             registrationFields.style.display = 'none';
         }
     });
+
+    document.getElementById('role').addEventListener('change', function () {
+            const certUploadField = document.getElementById('cert-upload-field');
+            if (this.value === 'lender') {
+                certUploadField.style.display = 'block';
+            } else {
+                certUploadField.style.display = 'none';
+            }
+        });
+
 </script>
 
 </body>

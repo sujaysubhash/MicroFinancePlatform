@@ -1,16 +1,15 @@
 <?php
-
-session_start(); // Start session
+session_start();
 
 // Check if the user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php"); // Redirect to login page if not logged in
+    header("Location: login.php");
     exit();
 }
 
 // Fetch user's name from session
 $user_name = $_SESSION['user_name'] ?? 'Guest';
-$user_role = $_SESSION['user_role'] ?? 'User'; // Default role if not set
+$user_role = $_SESSION['user_role'] ?? 'User';
 $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
 
 // Database configuration
@@ -27,8 +26,8 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// SQL query to fetch lender details
-$sql = "SELECT id, name, interest_rate, available_funds, experience, rating FROM lenders";
+// Fetch only lenders from users table
+$sql = "SELECT id, name, email FROM users WHERE role = 'Lender'";
 $result = $conn->query($sql);
 ?>
 
@@ -39,7 +38,7 @@ $result = $conn->query($sql);
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Dashboard -MFP</title>
+  <title>Lender Requests -MFP</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
@@ -61,7 +60,17 @@ $result = $conn->query($sql);
   <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
 
   <link href="assets/css/style.css" rel="stylesheet">
-
+  <style>
+        thead tr {
+            background-color: #4154f1 !important;
+            color: white !important;
+        }
+    </style>
+  <script>
+        function handleAction(action, lenderName) {
+            alert(`Lender ${lenderName} has been ${action}`);
+        }
+    </script>
 </head>
 
 <body>
@@ -165,8 +174,8 @@ $result = $conn->query($sql);
 
     <ul class="sidebar-nav" id="sidebar-nav">
 
-      <li class="nav-item">
-        <a class="nav-link active" href="./admin_home.php">
+      <li class="nav-item ">
+        <a class="nav-link collapsed" href="./admin_home.php">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
@@ -174,19 +183,19 @@ $result = $conn->query($sql);
 
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link active" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-menu-button-wide"></i><span>Lenders</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="components-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
           <li>
 
 
-            <a href="./lender_request.php">
+            <a href="./apply-loan.php" class= "active">
               <i class="bi bi-circle"></i><span>Lender Request</span>
             </a>
           </li>
 
-          <a href="./add_lender.php">
+          <a href="./loans.php">
               <i class="bi bi-circle"></i><span>Add lender</span>
             </a>
           </li>
@@ -215,14 +224,14 @@ $result = $conn->query($sql);
 
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./admin_reviews.php">
+        <a class="nav-link collapsed" href="./faq.php">
           <i class="bi bi-question-circle"></i>
           <span>Reviews</span>
         </a>
       </li><!-- End F.A.Q Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./admin_assistance.php">
+        <a class="nav-link collapsed" href="./contact.php">
           <i class="bi bi-envelope"></i>
           <span>Assistance</span>
         </a>
@@ -239,44 +248,42 @@ $result = $conn->query($sql);
 
   </aside><!-- End Sidebar-->
 
-  <main id="main" class="main">
-  <div class="pagetitle">
-    <h1 class = "text-center">System Lenders</h1>
-  </div><!-- End Page Title -->
-
-  <section class="section">
-    <div class="row">
-      <?php
-      // Check if any records exist
-      if ($result->num_rows > 0) {
-          while ($row = $result->fetch_assoc()) {
-              ?>
-              <!-- Lender Card -->
-              <div class="col-lg-4 col-md-6">
-                <div class="card shadow-sm border-0 rounded">
-                  <div class="card-body">
-                    <h5 class="card-title text-primary"><?php echo htmlspecialchars($row['name']); ?></h5>
-                    <p class="card-text">
-                      <strong>Interest Rate:</strong> <?php echo htmlspecialchars($row['interest_rate']); ?>%<br>
-                      <strong>Loan Amount:</strong> ₹<?php echo number_format($row['available_funds']); ?><br>
-                      <strong>Experience:</strong> <?php echo htmlspecialchars($row['experience']); ?> years<br>
-                     
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <?php
-          }
-      } else {
-          echo "<p>No lenders found.</p>";
-      }
-
-      // Close connection at the end
-      $conn->close();
-      ?>
+  <main id="main" class="main"> 
+    <div class="container mt-4">
+        <h2 class="mb-4">Lender Requests</h2>
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ($result->num_rows > 0): ?>
+                    <?php while ($row = $result->fetch_assoc()): ?>
+                        <tr id="lender-row-<?= htmlspecialchars($row['id']); ?>">
+                            <td><?= htmlspecialchars($row['id']); ?></td>
+                            <td><?= htmlspecialchars($row['name']); ?></td>
+                            <td><?= htmlspecialchars($row['email']); ?></td>
+                            <td>
+                                <button class="btn btn-success btn-sm" onclick="handleAction('Accepted', '<?= htmlspecialchars($row['name']); ?>')">Accept</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteLender(<?= htmlspecialchars($row['id']); ?>)">Reject</button>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="4" class="text-center">No lender requests found.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
-  </section>
-</main><!-- End #main -->
+</main>
+
+<?php $conn->close(); ?>
 
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
@@ -301,6 +308,37 @@ $result = $conn->query($sql);
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+
+  <script>
+    function handleAction(action, lenderName) {
+        alert(`Lender ${lenderName} has been ${action}`);
+    }
+
+    function deleteLender(lenderId) {
+        if (confirm("Are you sure you want to delete this lender?")) {
+            fetch('delete_lender.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: lenderId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Lender deleted successfully.");
+                    document.getElementById(`lender-row-${lenderId}`).remove();
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    }
+        function handleAction(action, lenderName) {
+            alert(`Lender ${lenderName} has been ${action}`);
+        }
+    </script>
 
 </body>
 
