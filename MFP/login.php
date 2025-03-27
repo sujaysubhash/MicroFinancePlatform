@@ -66,6 +66,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $confirm_password = $_POST['confirm_password'] ?? '';
         $role = $_POST['role'] ?? '';
         $certificate_blob = NULL;
+
+        // Lender-specific fields
+        $interest_rate = $_POST['interest_rate'] ?? 0;
+        $available_funds = $_POST['available_funds'] ?? 0;
+        $experience = $_POST['experience'] ?? 0;
+        $rating = 0; // Default rating
     
         if (empty($name) || empty($email) || empty($password) || empty($confirm_password) || empty($role)) {
             $response_message = "All fields are required.";
@@ -87,9 +93,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
             $sql = "INSERT INTO users (name, email, password, role, non_criminal_cert) VALUES (?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
-
-           
-
     
             if ($stmt) {
                 $stmt->bind_param("sssss", $name, $email, $hashed_password, $role, $certificate_blob);
@@ -109,6 +112,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
     
+                    // Insert into lenders table if role is 'Lender'
+                    if (strtolower($role) === "lender") {
+                        $lender_sql = "INSERT INTO lenders (id, name, interest_rate, available_funds, experience, rating) VALUES (?, ?, ?, ?, ?, ?)";
+                        $lender_stmt = $conn->prepare($lender_sql);
+                    
+                        if ($lender_stmt) {
+                            $lender_stmt->bind_param("isdiii", $user_id, $name, $interest_rate, $available_funds, $experience, $rating);
+                            if (!$lender_stmt->execute()) {
+                                $response_message = "Error inserting lender data: " . $lender_stmt->error;
+                            }
+                            $lender_stmt->close();
+                        } else {
+                            $response_message = "Error preparing lender statement: " . $conn->error;
+                        }
+                    }
+    
                     $response_message = "Registration successful! You can now log in.";
                 } else {
                     $response_message = "Error: " . $stmt->error;
@@ -120,11 +139,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
-    
 }
 
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -200,48 +219,70 @@ $conn->close();
             </div>
         </div>
 
+        <div id="lenderFields" style="display: none;">
+            <div class="mb-3">
+                <label for="interest rate" class="form-label">Interest Rate (%):</label>
+                <input class="form-control" placeholder="Interest Rate (%)" type="number" name="interest_rate" step="0.1">
+            </div>
+            
+            <div class="mb-3">
+                <label for="availabe funds" class="form-label">Available Funds:</label>
+                <input class="form-control" placeholder="Available Funds" name="availabe funds" type="number" name="available_funds">
+            </div>
+
+            <div class="mb-3">
+                <label for="experience" class="form-label">Experience (Years):</label>
+                <input class="form-control" placeholder="Experience (Years)" name="experience" type="number">
+            </div>
+        </div>
         <div id="cert-upload-field" style="display: none;">
             <label>Upload Non-Criminal Certificate:</label>
             <input type="file" name="non_criminal_cert">
         </div><br>
-
         <button type="submit" class="btn btn-primary w-100" id="submit-button">Login</button>
-        <button type="button" class="btn btn-link w-100 mt-2" id="toggle-form">Switch to Registration</button>
+        <button type="button" class="btn btn-link link-underline-light w-100 mt-2" id="toggle-form">Switch to Registration</button>
     </form>
 </div>
 
 <script>
-    const toggleFormButton = document.getElementById('toggle-form');
-    const actionInput = document.getElementById('action');
-    const submitButton = document.getElementById('submit-button');
-    const roleSelection = document.getElementById('role-selection');
-    const registrationFields = document.getElementById('registration-fields');
+        document.querySelector('.alert')?.remove(); // Remove response message when switching
+        const toggleFormButton = document.getElementById('toggle-form');
+        const actionInput = document.getElementById('action');
+        const submitButton = document.getElementById('submit-button');
+        const roleSelection = document.getElementById('role-selection');
+        const registrationFields = document.getElementById('registration-fields');
+        const lenderFields = document.getElementById('lenderFields');
+        const certUploadField = document.getElementById('cert-upload-field');
 
-    toggleFormButton.addEventListener('click', () => {
-        if (actionInput.value === 'login') {
-            actionInput.value = 'register';
-            submitButton.textContent = 'Register';
-            toggleFormButton.textContent = 'Switch to Login';
-            roleSelection.style.display = 'block';
-            registrationFields.style.display = 'block';
-        } else {
-            actionInput.value = 'login';
-            submitButton.textContent = 'Login';
-            toggleFormButton.textContent = 'Switch to Registration';
-            roleSelection.style.display = 'none';
-            registrationFields.style.display = 'none';
-        }
-    });
-
-    document.getElementById('role').addEventListener('change', function () {
-            const certUploadField = document.getElementById('cert-upload-field');
-            if (this.value === 'lender') {
-                certUploadField.style.display = 'block';
+        toggleFormButton.addEventListener('click', () => {
+            if (actionInput.value === 'login') {
+                actionInput.value = 'register';
+                submitButton.textContent = 'Register';
+                toggleFormButton.textContent = 'Switch to Login';
+                roleSelection.style.display = 'block';
+                registrationFields.style.display = 'block';
             } else {
-                certUploadField.style.display = 'none';
+                actionInput.value = 'login';
+                submitButton.textContent = 'Login';
+                toggleFormButton.textContent = 'Switch to Registration';
+                roleSelection.style.display = 'none';
+                registrationFields.style.display = 'none';
+                lenderFields.style.display = 'none'; // Hide lender fields when switching to login
+                certUploadField.style.display = 'none'; // Hide certificate field
             }
         });
 
+        // Ensure lender fields show when "Lender" is selected
+        document.getElementById('role').addEventListener('change', function () {
+            if (this.value === 'lender') {
+                lenderFields.style.display = 'block';
+                certUploadField.style.display = 'block';
+            } else {
+                lenderFields.style.display = 'none';
+                certUploadField.style.display = 'none';
+            }
+        });
+        
 </script>
 
 </body>

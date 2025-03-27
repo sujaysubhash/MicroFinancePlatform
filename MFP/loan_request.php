@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 // Fetch user's details from session
 $user_id = $_SESSION['user_id'];
 $user_name = $_SESSION['user_name'] ?? 'Guest';
-$user_role = $_SESSION['user_role'] ?? 'User'; // Default role if not set
+$user_role = $_SESSION['user_role'] ?? 'User';
 $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
 
 // Database connection
@@ -27,7 +27,7 @@ if ($conn->connect_error) {
 
 // Fetch loan count from borrower table
 $loan_count = 0;
-$sql = "SELECT COUNT(*) AS total_loans FROM borrower WHERE user_id = ?";  
+$sql = "SELECT COUNT(*) AS total_loans FROM borrower WHERE user_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -69,18 +69,18 @@ if ($result->num_rows > 0) {
 
 // Fetch latest 5 news articles
 $sql = "SELECT * FROM news_updates ORDER BY created_at DESC LIMIT 5";
-$result = $conn->query($sql);
+$news_result = $conn->query($sql);
 
-// Fetch borrowers requested by the lender
-$sql = "SELECT b.name, b.email, b.employment_status, b.credit_score 
+// Fetch borrowers requested by the lender, ensuring uniqueness
+$sql = "SELECT DISTINCT b.name, b.email, b.employment_status, b.credit_score 
         FROM borrower b
         INNER JOIN loan_application la ON b.user_id = la.borrower_id
         WHERE la.lender_id = ?";
-
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
+$stmt->close();
 $conn->close();
 ?>
 
@@ -481,7 +481,7 @@ $conn->close();
                                 <p class="card-text"><strong>Email:</strong> <?php echo htmlspecialchars($row['email']); ?></p>
                                 <p class="card-text"><strong>Employment Status:</strong> <?php echo htmlspecialchars($row['employment_status']); ?></p>
                                 <p class="card-text"><strong>Credit Score:</strong> <?php echo htmlspecialchars($row['credit_score']); ?></p>
-                                <button class="btn btn-primary">View Details</button>
+                                <button class="btn btn-primary">Accept Loan Request</button>
                             </div>
                         </div>
                     </div>
