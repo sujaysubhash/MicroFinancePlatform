@@ -77,6 +77,16 @@ if ($result && $row = $result->fetch_assoc()) {
     $loan_id = $row['loan_id'];
 }
 
+// Fetch wallet balance for lender
+$lender_wallet_balance = 0;
+$sql = "SELECT wallet_balance FROM lenders WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$stmt->bind_result($lender_wallet_balance);
+$stmt->fetch();
+$stmt->close();
+
 
 $conn->close();
 ?> 
@@ -472,7 +482,7 @@ $conn->close();
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title">Wallet Balance</h5>
-                    <p class="fs-4 text-success mb-3">₹ <span id="walletBalance"><?php echo number_format($wallet_balance, 2); ?></span></p>
+                    <p class="fs-4 text-success mb-3">₹ <span id="walletBalance"><?php echo number_format($lender_wallet_balance, 2); ?></span></p>
                     
                     <div class="mb-3">
                         <label for="addAmount" class="form-label">Add Money to Wallet</label>
