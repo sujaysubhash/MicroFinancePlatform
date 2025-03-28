@@ -387,7 +387,7 @@ $conn->close();
             </a>
           </li>
 
-          <a href="./lender_page_amount_request.php.php">
+          <a href="./lender_page_amount_request.php">
               <i class="bi bi-circle"></i><span>Amount Requests</span>
             </a>
           </li>

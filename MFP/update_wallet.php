@@ -1,4 +1,4 @@
-<?php
+<?php 
 session_start();
 include './db_connection.php'; 
 
@@ -18,6 +18,23 @@ if ($amount <= 0) {
 
 $conn->begin_transaction();
 try {
+    // Check if the borrower has an approved loan with any lender
+    $stmt = $conn->prepare("
+        SELECT lender_id FROM loan_application 
+        WHERE borrower_id = ? AND status = 'approved' 
+        ORDER BY loanid DESC LIMIT 1
+    ");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $stmt->bind_result($lender_id);
+    $stmt->fetch();
+    $stmt->close();
+
+    if (!$lender_id) {
+        throw new Exception("No approved loan found for this borrower.");
+    }
+
+    // Fetch borrower's wallet balance
     $stmt = $conn->prepare("SELECT wallet_balance FROM borrower WHERE user_id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
@@ -25,23 +42,44 @@ try {
     $stmt->fetch();
     $stmt->close();
 
-    if ($action === "add") {
-        $wallet_balance += $amount;
-    } elseif ($action === "deduct") {
+    if ($action === "deduct") {
         if ($wallet_balance < $amount) {
             throw new Exception("Insufficient balance.");
         }
         $wallet_balance -= $amount;
+
+        // Fetch lender's wallet balance
+        $stmt = $conn->prepare("SELECT wallet_balance FROM lenders WHERE id = ?");
+        $stmt->bind_param("i", $lender_id);
+        $stmt->execute();
+        $stmt->bind_result($lender_wallet_balance);
+        $stmt->fetch();
+        $stmt->close();
+
+        if ($lender_wallet_balance === null) {
+            throw new Exception("Lender not found.");
+        }
+
+        // Update lender's wallet balance
+        $new_lender_balance = $lender_wallet_balance + $amount;
+        $stmt = $conn->prepare("UPDATE lenders SET wallet_balance = ? WHERE id = ?");
+        $stmt->bind_param("di", $new_lender_balance, $lender_id);
+        if (!$stmt->execute()) {
+            throw new Exception("Failed to update lender's wallet.");
+        }
     } else {
         throw new Exception("Invalid action.");
     }
 
+    // Update borrower's wallet balance
     $stmt = $conn->prepare("UPDATE borrower SET wallet_balance = ? WHERE user_id = ?");
     $stmt->bind_param("di", $wallet_balance, $user_id);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        throw new Exception("Failed to update borrower's wallet.");
+    }
     
     $conn->commit();
-    echo json_encode(["success" => true, "new_balance" => $wallet_balance]);
+    echo json_encode(["success" => true, "new_balance" => $wallet_balance, "lender_balance" => $new_lender_balance]);
 } catch (Exception $e) {
     $conn->rollback();
     echo json_encode(["success" => false, "message" => $e->getMessage()]);
