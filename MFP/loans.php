@@ -7,10 +7,11 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Fetch user's name from session
+// Fetch user's details from session
 $user_name = $_SESSION['user_name'] ?? 'Guest';
 $user_role = $_SESSION['user_role'] ?? 'User';
 $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
+$user_id = $_SESSION['user_id']; // Borrower's ID
 
 // Database connection
 $host = "localhost";
@@ -26,7 +27,7 @@ if ($conn->connect_error) {
 
 // Fetch loan details from loan_application table
 $loans = [];
-$sql = "SELECT loanid, lender_name, interest_rate, status FROM loan_application";
+$sql = "SELECT loanid, lender_id, lender_name, interest_rate, requested_loan_amount, status FROM loan_application";
 $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
@@ -35,8 +36,43 @@ if ($result->num_rows > 0) {
     }
 }
 
+// Handle request amount button click
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['loanid'])) {
+    $loan_id = $_POST['loanid'];
+    
+    // Fetch lender ID and requested loan amount from loan_application table
+    $sql = "SELECT lender_id, requested_loan_amount FROM loan_application WHERE loanid = ? AND borrower_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $loan_id, $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $loan = $result->fetch_assoc();
+        $lender_id = $loan['lender_id'];
+        $loan_amount = $loan['requested_loan_amount'];
+
+        // Insert a new payment request
+        $insert_sql = "INSERT INTO payments (lender_id, borrower_id, amount, status) VALUES (?, ?, ?, 'Pending')";
+        $stmt = $conn->prepare($insert_sql);
+        $stmt->bind_param("iid", $lender_id, $user_id, $loan_amount);
+        
+        if ($stmt->execute()) {
+            echo "<script>alert('Payment request sent successfully!');</script>";
+        } else {
+            echo "<script>alert('Error: " . $stmt->error . "');</script>";
+        }
+        
+        $stmt->close();
+    } else {
+        echo "<script>alert('Loan application not found.');</script>";
+    }
+}
+
 $conn->close();
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -432,6 +468,7 @@ $conn->close();
                     <th scope="col">Lender Name</th>
                     <th scope="col">Interest Rate</th>
                     <th scope="col">Status</th>
+                    <th scope="col">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -452,11 +489,22 @@ $conn->close();
                                 ?>
                                 <span class="badge <?php echo $statusClass; ?>"><?php echo ucfirst($loan['status']); ?></span>
                             </td>
+                            <td>
+                                <?php if ($loan['status'] === 'approved'): ?>
+                                  <form method="POST" class="d-inline request-form">
+                                      <input type="hidden" name="loanid" value="<?php echo $loan['loanid']; ?>">
+                                      <button type="submit" class="btn btn-primary btn-sm request-btn">
+                                          Request Amount
+                                      </button>
+                                  </form>
+
+                                <?php endif; ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="4" class="text-center">No loan applications found.</td>
+                        <td colspan="5" class="text-center">No loan applications found.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>
@@ -488,6 +536,41 @@ $conn->close();
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+
+  <script>
+     document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".request-form").forEach(form => {
+            let button = form.querySelector(".request-btn");
+            let loanId = form.querySelector("input[name='loanid']").value;
+
+            // Check if this loan was already requested
+            if (localStorage.getItem("requested_" + loanId)) {
+                button.textContent = "Requested";
+                button.classList.remove("btn-primary");
+                button.classList.add("btn-success");
+                button.disabled = true;
+            }
+
+            form.addEventListener("submit", function (event) {
+                event.preventDefault(); // Prevent immediate form submission
+
+                button.textContent = "Requested";
+                button.classList.remove("btn-primary");
+                button.classList.add("btn-success");
+                button.disabled = true;
+
+                // Store the request state in localStorage
+                localStorage.setItem("requested_" + loanId, true);
+
+                // submit the form after a short delay
+                setTimeout(() => {
+                    this.submit(); // Submit after updating UI
+                }, 500);
+            });
+        });
+    });
+</script>
+
 
 </body>
 

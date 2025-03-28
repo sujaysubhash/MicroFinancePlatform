@@ -252,8 +252,8 @@ $conn->close();
     <li class="nav-item dropdown pe-3">
 
       <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-<img src="assets/img/profile-img.jpg" alt="Profile" class="rounded-circle">
-<span class="d-none d-md-block dropdown-toggle ps-2"><?= htmlspecialchars($user_name) ?></span>
+    <img src="./assets/img/person_profile.svg" alt="Profile" class="rounded-circle">
+    <span class="d-none d-md-block dropdown-toggle ps-2"><?= htmlspecialchars($user_name) ?></span>
       </a>
 
       <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
@@ -447,7 +447,7 @@ $conn->close();
             <div class="col-xl-4">
                 <div class="card">
                     <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-                        <img src="assets/img/profile-img.jpg" alt="Profile" class="rounded-circle">
+                        <img src="assets/img/person_profile.svg" alt="Profile" class="rounded-circle">
                         <h2><?php echo htmlspecialchars($user_name); ?></h2>
                         <h3><?php echo htmlspecialchars($user_role); ?></h3>
                         <div class="social-links mt-2">

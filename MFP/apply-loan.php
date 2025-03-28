@@ -37,13 +37,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apply_loan'])) {
     $employment_status = $_POST['employment_status'];
     $income = $_POST['income'];
     $credit_score = $_POST['credit_score'] ?? rand(300, 900); // Generate if not provided
+    $loan_amount = $_POST['loan_amount']; // Fetch requested loan amount
 
     // Ensure borrower exists in the borrower table
     $check_borrower = $conn->query("SELECT user_id FROM borrower WHERE user_id = '$user_id'");
     if ($check_borrower->num_rows == 0) {
-        $insert_borrower = "INSERT INTO borrower (user_id, name, email, employment_status, income, credit_score, loan_status) 
-                            VALUES ('$user_id', '$user_name', '$user_email', '$employment_status', '$income', '$credit_score', 'pending')";
-        $conn->query($insert_borrower) or die("Error inserting borrower: " . $conn->error);
+        $insert_borrower = "INSERT INTO borrower (user_id, name, email, employment_status, income, credit_score, loan_status, funded_amount, loan_applied_count, wallet_balance) 
+                            VALUES ('$user_id', '$user_name', '$user_email', '$employment_status', '$income', '$credit_score', 'pending', 0, 1, 0)";
+        if (!$conn->query($insert_borrower)) {
+            die("Error inserting borrower: " . $conn->error);
+        }
+    } else {
+        // If borrower exists, update details
+        $update_borrower = "UPDATE borrower SET employment_status='$employment_status', income='$income', 
+                            credit_score='$credit_score', loan_status='pending', loan_applied_count = loan_applied_count + 1 
+                            WHERE user_id='$user_id'";
+        if (!$conn->query($update_borrower)) {
+            die("Error updating borrower: " . $conn->error);
+        }
     }
 
     // Fetch lender details
@@ -55,29 +66,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apply_loan'])) {
         $available_funds = $lender['available_funds'];
 
         // Ensure the loan amount is within the available funds
-        if ($_POST['loan_amount'] > $available_funds) {
+        if ($loan_amount > $available_funds) {
             echo "<script>alert('Loan amount exceeds available funds! Please enter a valid amount.'); window.location.href='apply-loan.php';</script>";
             exit();
         }
 
-        $loan_amount = $_POST['loan_amount']; // Fetch requested loan amount
-        // Insert into loan_application table (Updated to include requested_loan_amount)
-        $insert_loan = "INSERT INTO loan_application (borrower_id, lender_id, borrower, lender_name, interest_rate, requested_loan_amount, status) 
-                VALUES ('$user_id', '$lender_id', '$user_name', '$lender_name', '$interest_rate', '$loan_amount', 'pending')";
-        $conn->query($insert_loan) or die("Error inserting loan: " . $conn->error);
+        // Insert into loan_application table (including requested_loan_amount)
+        $loan_duration = $_POST['loan_duration']; // Fetch loan duration
 
-
-        // Insert into loan_application table
-        $insert_loan = "INSERT INTO loan_application (borrower_id, lender_id, borrower, lender_name, interest_rate, status) 
-                        VALUES ('$user_id', '$lender_id', '$user_name', '$lender_name', '$interest_rate', 'pending')";
-        $conn->query($insert_loan) or die("Error inserting loan: " . $conn->error);
+        // Insert into loan_application table (including loan_duration)
+        $insert_loan = "INSERT INTO loan_application (borrower_id, lender_id, borrower, lender_name, interest_rate, requested_loan_amount, loan_duration, status) 
+                VALUES ('$user_id', '$lender_id', '$user_name', '$lender_name', '$interest_rate', '$loan_amount', '$loan_duration', 'pending')";
+        
+        if (!$conn->query($insert_loan)) {
+            die("Error inserting loan: " . $conn->error);
+        }
+        
         $loan_id = $conn->insert_id;
 
         // Update borrower table with loan details
-        $update_borrower = "UPDATE borrower SET employment_status='$employment_status', income='$income', 
-                            credit_score='$credit_score', loan_status='pending', loan_id='$loan_id' 
-                            WHERE user_id='$user_id'";
-        $conn->query($update_borrower) or die("Error updating borrower: " . $conn->error);
+        $update_borrower = "UPDATE borrower SET loan_id='$loan_id' WHERE user_id='$user_id'";
+        if (!$conn->query($update_borrower)) {
+            die("Error updating borrower: " . $conn->error);
+        }
 
         echo "<script>alert('Loan application submitted successfully!'); window.location.href='lenders.php';</script>";
     } else {
@@ -85,6 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apply_loan'])) {
     }
 }
 ?>
+
 
 
 <!DOCTYPE html>
@@ -546,6 +558,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apply_loan'])) {
                           <label for="loan_amount" class="form-label">Loan Amount</label>
                           <input type="number" class="form-control" name="loan_amount" id="loan_amount_<?php echo $row['id']; ?>" 
                           min="1" max="<?php echo $row['available_funds']; ?>" required>
+                        </div>
+                        <div class="mb-3">
+                          <label for="loan_duration" class="form-label">Loan Duration (Months)</label>
+                          <input type="number" class="form-control" name="loan_duration" id="loan_duration_<?php echo $row['id']; ?>" 
+                          min="1" max="60" required> <!-- Limit duration between 1 and 60 months -->
                         </div>
 
                         <button type="submit" name="apply_loan" class="btn btn-success">Submit Loan Application</button>

@@ -72,10 +72,12 @@ $sql = "SELECT * FROM news_updates ORDER BY created_at DESC LIMIT 5";
 $news_result = $conn->query($sql);
 
 // Fetch borrowers requested by the lender, ensuring uniqueness
-$sql = "SELECT DISTINCT b.name, b.email, b.employment_status, b.credit_score 
+$sql = "SELECT b.name, b.email, b.employment_status, b.credit_score, MAX(la.loanid) AS loanid 
         FROM borrower b
         INNER JOIN loan_application la ON b.user_id = la.borrower_id
-        WHERE la.lender_id = ?";
+        WHERE la.lender_id = ?
+        GROUP BY b.user_id, b.name, b.email, b.employment_status, b.credit_score";
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -353,7 +355,7 @@ $conn->close();
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link " href="./lender_home.php">
+        <a class="nav-link collapsed" href="./lender_home.php">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
@@ -366,7 +368,7 @@ $conn->close();
       </li><!-- End Profile Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="loan_request.php">
+        <a class="nav-link active" href="loan_request.php">
           <i class="bi bi-person"></i>
           <span>Requests</span>
         </a>
@@ -385,8 +387,8 @@ $conn->close();
             </a>
           </li>
 
-          <a href="./loans.php">
-              <i class="bi bi-circle"></i><span>Loan Requests</span>
+          <a href="./lender_page_amount_request.php.php">
+              <i class="bi bi-circle"></i><span>Amount Requests</span>
             </a>
           </li>
 
@@ -481,7 +483,15 @@ $conn->close();
                                 <p class="card-text"><strong>Email:</strong> <?php echo htmlspecialchars($row['email']); ?></p>
                                 <p class="card-text"><strong>Employment Status:</strong> <?php echo htmlspecialchars($row['employment_status']); ?></p>
                                 <p class="card-text"><strong>Credit Score:</strong> <?php echo htmlspecialchars($row['credit_score']); ?></p>
-                                <button class="btn btn-primary">Accept Loan Request</button>
+                                
+                                
+                                <form method="POST" action="accept_loan.php" class="d-inline accept-form">
+                                <input type="hidden" name="loanid" value="<?php echo $row['loanid']; ?>">
+                                  <button type="submit" class="btn btn-primary btn-sm accept-btn">
+                                      Accept Loan Request
+                                  </button>
+                                </form>
+
                             </div>
                         </div>
                     </div>
@@ -519,6 +529,41 @@ $conn->close();
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".accept-form").forEach(form => {
+        let button = form.querySelector(".accept-btn");
+        let loanId = form.querySelector("input[name='loanid']").value;
+
+        // Check if this loan was already accepted
+        if (localStorage.getItem("accepted_" + loanId)) {
+            button.textContent = "Accepted";
+            button.classList.remove("btn-primary");
+            button.classList.add("btn-success");
+            button.disabled = true;
+        }
+
+        form.addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent immediate form submission
+
+            button.textContent = "Accepted";
+            button.classList.remove("btn-primary");
+            button.classList.add("btn-success");
+            button.disabled = true;
+
+            // Store the accepted state in localStorage
+            localStorage.setItem("accepted_" + loanId, true);
+
+            // Submit the form after a short delay
+            setTimeout(() => {
+                this.submit(); // Submit after updating UI
+            }, 500);
+        });
+    });
+    });
+  </script>
+  
 
 </body>
 
