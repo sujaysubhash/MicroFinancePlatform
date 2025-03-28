@@ -11,9 +11,18 @@ $lender_id = $_SESSION['user_id'];
 
 // Check if loan ID is provided
 if (!isset($_POST['loanid'])) {
-    die("Invalid request.");
+    $_SESSION['error_message'] = "Invalid request.";
+    header("Location: lender_page_amount_request.php");
+    exit();
 }
 $loan_id = intval($_POST['loanid']);
+
+// Check if the loan was already funded by this lender
+if (isset($_SESSION['funded_loans']) && in_array($loan_id, $_SESSION['funded_loans'])) {
+    $_SESSION['error_message'] = "Loan already funded.";
+    header("Location: lender_page_amount_request.php");
+    exit();
+}
 
 // Database connection
 $host = "localhost";
@@ -28,14 +37,16 @@ if ($conn->connect_error) {
 }
 
 // Fetch loan details
-$loan_query = "SELECT requested_loan_amount, borrower_id FROM loan_application WHERE loanid = ? AND status = 'pending'";
+$loan_query = "SELECT requested_loan_amount, borrower_id FROM loan_application WHERE loanid = ? AND status = 'approved'";
 $stmt = $conn->prepare($loan_query);
 $stmt->bind_param("i", $loan_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    die("Loan not found or already funded.");
+    $_SESSION['error_message'] = "Loan not found or already funded.";
+    header("Location: lender_page_amount_request.php");
+    exit();
 }
 
 $loan = $result->fetch_assoc();
@@ -51,7 +62,9 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    die("Lender not found.");
+    $_SESSION['error_message'] = "Lender not found.";
+    header("Location: lender_page_amount_request.php");
+    exit();
 }
 
 $lender = $result->fetch_assoc();
@@ -60,7 +73,9 @@ $stmt->close();
 
 // Check if lender has enough funds
 if ($lender_balance < $loan_amount) {
-    die("Insufficient funds in your wallet.");
+    $_SESSION['error_message'] = "Insufficient funds in your wallet.";
+    header("Location: lender_page_amount_request.php");
+    exit();
 }
 
 // Deduct funds from lender
@@ -77,16 +92,22 @@ $stmt->bind_param("di", $loan_amount, $borrower_id);
 $stmt->execute();
 $stmt->close();
 
-// Update loan status to approved
-$update_loan = "UPDATE loan_application SET status = 'approved' WHERE loanid = ?";
+// Update loan status to funded
+$update_loan = "UPDATE loan_application SET status = 'funded' WHERE loanid = ?";
 $stmt = $conn->prepare($update_loan);
 $stmt->bind_param("i", $loan_id);
 $stmt->execute();
 $stmt->close();
 
+// Store the funded loan in the session
+if (!isset($_SESSION['funded_loans'])) {
+    $_SESSION['funded_loans'] = [];
+}
+$_SESSION['funded_loans'][] = $loan_id;
+
 $conn->close();
 
-echo "Loan successfully funded.";
-header("Location: fund_loan.php"); // Redirect back to loan requests page
+// Redirect after funding
+header("Location: lender_page_amount_request.php");
 exit();
 ?>

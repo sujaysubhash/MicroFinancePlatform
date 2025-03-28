@@ -25,15 +25,19 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Corrected SQL Query to fetch pending loan requests
-$sql = "SELECT la.loanid AS loanid, b.user_id, b.name, 
-        la.requested_loan_amount AS loan_amount, la.interest_rate, la.status,
-        la.loan_duration AS duration  -- Include loan_duration
+// Corrected SQL Query to fetch pending loan details with borrower info
+$sql = "SELECT la.loanid AS loanid, 
+                b.user_id AS borrower_id, 
+                b.name AS borrower_name, 
+                la.requested_loan_amount AS loan_amount, 
+                la.interest_rate, 
+                la.status,
+                la.loan_duration AS duration
         FROM loan_application la
         JOIN borrower b ON la.borrower_id = b.user_id
-        WHERE la.status = 'pending'";
+        WHERE la.status = 'approved'";  // Only fetching loans that are pending
 
-
+// Execute query
 $result = $conn->query($sql);
 
 if (!$result) {
@@ -47,7 +51,7 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $conn->close();
-?>
+?> 
 
 
 <!DOCTYPE html>
@@ -434,6 +438,15 @@ $conn->close();
   </aside><!-- End Sidebar-->
 
   <main id="main" class="main">
+
+  
+  <?php if (isset($_SESSION['error_message'])): ?>
+        <script>
+            alert("<?php echo $_SESSION['error_message']; ?>");
+            <?php unset($_SESSION['error_message']); ?>
+        </script>
+    <?php endif; ?>
+    
     <div class="card-body">
         <h5 class="card-title">Requested Loans <span>| Pending Approval</span></h5>
 
@@ -442,6 +455,7 @@ $conn->close();
                 <tr>
                     <th scope="col">Loan ID</th>
                     <th scope="col">Borrower ID</th>
+                    <th scope="col">Borrower Name</th>
                     <th scope="col">Amount</th>
                     <th scope="col">Interest Rate</th>
                     <th scope="col">Duration</th>
@@ -454,22 +468,23 @@ $conn->close();
                     <?php foreach ($requested_loans as $loan): ?>
                         <tr>
                             <th scope="row">LN<?php echo $loan['loanid']; ?></th>
-                            <td><?php echo htmlspecialchars($loan['user_id']); ?></td>
-                            <td>₹<?php echo number_format($loan['loan_amount']); ?></td>
+                            <td><?php echo htmlspecialchars($loan['borrower_id']); ?></td>
+                            <td><?php echo htmlspecialchars($loan['borrower_name']); ?></td>
+                            <td>₹<?php echo number_format($loan['loan_amount'], 2); ?></td>
                             <td><?php echo $loan['interest_rate']; ?>%</td>
                             <td><?php echo isset($loan['duration']) ? $loan['duration'] . ' months' : 'N/A'; ?></td>
                             <td><span class="badge bg-warning"><?php echo ucfirst($loan['status']); ?></span></td>
                             <td>
-                                <form method="POST" action="fund_loan.php">
+                                <form method="POST" action="fund_loan.php" class="fund-loan-form">
                                     <input type="hidden" name="loanid" value="<?php echo $loan['loanid']; ?>">
-                                    <button type="submit" class="btn btn-success btn-sm">Fund Loan</button>
+                                    <button type="submit" class="btn btn-success btn-sm fund-loan-btn">Fund Loan</button>
                                 </form>
                             </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="7" class="text-center">No requested loans available.</td>
+                        <td colspan="8" class="text-center">No requested loans available.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>
@@ -500,6 +515,31 @@ $conn->close();
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const fundedLoans = <?php echo json_encode($_SESSION['funded_loans'] ?? []); ?>;
+
+        document.querySelectorAll(".fund-loan-btn").forEach(button => {
+            const loanId = button.getAttribute("data-loanid");
+
+            if (fundedLoans.includes(loanId)) {
+                button.disabled = true;
+                button.textContent = "Funded";
+            }
+
+            button.addEventListener("click", function(event) {
+                event.preventDefault();
+                button.disabled = true;
+                button.textContent = "Funded";
+
+                setTimeout(() => {
+                    button.closest("form").submit();
+                }, 500);
+            });
+        });
+    });
+</script>
 
 </body>
 

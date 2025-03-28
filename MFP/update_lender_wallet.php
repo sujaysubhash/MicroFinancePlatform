@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$user_id = $_SESSION['user_id'];  // Lender's ID
+$user_id = $_SESSION['user_id']; // Lender's ID
 
 $host = "localhost";
 $dbname = "mfp_database";
@@ -23,12 +23,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'], $_POST['amo
     $action = $_POST['action'];
     $amount = floatval($_POST['amount']);
 
-    // Get lender's wallet balance
+    // Fetch current wallet balance
     $stmt = $conn->prepare("SELECT wallet_balance FROM lenders WHERE id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $stmt->bind_result($wallet_balance);
-    $stmt->fetch();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $wallet_balance = $row['wallet_balance'];
+    } else {
+        echo json_encode(["success" => false, "message" => "Lender not found."]);
+        exit();
+    }
     $stmt->close();
 
     if ($action === "add") {
