@@ -327,45 +327,45 @@ $conn->close();
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link " href="./index.php">
+        <a class="nav-link collapsed" href="./lender_home.php">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
       </li><!-- End Dashboard Nav -->
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./notifications.php">
+        <a class="nav-link collapsed" href="">
           <i class="bi bi-person"></i>
           <span>Notification</span>
         </a>
       </li><!-- End Profile Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./lenders.php">
+        <a class="nav-link collapsed" href="loan_request.php">
           <i class="bi bi-person"></i>
-          <span>Lenders</span>
+          <span>Requests</span>
         </a>
       </li><!-- End Profile Page Nav -->
 
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-menu-button-wide"></i><span>Loans</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-menu-button-wide"></i><span>Investment</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
 
 
-            <a href="./apply-loan.php">
-              <i class="bi bi-circle"></i><span>Apply for loan</span>
+            <a href="">
+              <i class="bi bi-circle"></i><span>Active Loans</span>
             </a>
           </li>
 
-          <a href="./loans.php">
-              <i class="bi bi-circle"></i><span>My Loans</span>
+          <a href="./lender_page_amount_request.php">
+              <i class="bi bi-circle"></i><span>Amount Request</span>
             </a>
           </li>
 
-          <a href="./repayment.php">
-              <i class="bi bi-circle"></i><span>Repayments</span>
+          <a href="">
+              <i class="bi bi-circle"></i><span>Investment History</span>
             </a>
           </li>
           
@@ -378,13 +378,13 @@ $conn->close();
         </a>
         <ul id="forms-nav" class="nav-content active" data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./repayment.php">
-              <i class="bi bi-circle"></i><span>Repayments</span>
+            <a href="./add_money.php">
+              <i class="bi bi-circle"></i><span>Add Money </span>
             </a>
           </li>
           <li>
-            <a href="./borrower_payment-history.php" class="active">
-              <i class="bi bi-circle active"></i><span>Payment History</span>
+            <a href="./lender_payment_history.php" class="active">
+              <i class="bi bi-circle"></i><span>Payment History</span>
             </a>
           </li>
           
@@ -397,12 +397,12 @@ $conn->close();
         </a>
         <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./profile.php">
+            <a href="">
               <i class="bi bi-circle"></i><span>Personal Details</span>
             </a>
           </li>
           <li>
-            <a href="./borrower-bankdetails.php">
+            <a href="">
               <i class="bi bi-circle"></i><span>Bank Details</span>
             </a>
           </li>
@@ -417,21 +417,21 @@ $conn->close();
 
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./faq.php">
+        <a class="nav-link collapsed" href="">
           <i class="bi bi-question-circle"></i>
           <span>F.A.Q</span>
         </a>
       </li><!-- End F.A.Q Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./contact.php">
+        <a class="nav-link collapsed" href="">
           <i class="bi bi-envelope"></i>
           <span>Contact</span>
         </a>
       </li><!-- End Contact Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./login.php">
+        <a class="nav-link collapsed" href="./logout.php">
           <i class="bi bi-box-arrow-in-right"></i>
           <span>Logout</span>
         </a>

@@ -73,6 +73,16 @@ if ($result->num_rows > 0) {
 $sql = "SELECT * FROM news_updates ORDER BY created_at DESC LIMIT 5";
 $result = $conn->query($sql);
 
+// Fetch wallet balance for lender
+$lender_wallet_balance = 0;
+$sql = "SELECT wallet_balance FROM lenders WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$stmt->bind_result($lender_wallet_balance);
+$stmt->fetch();
+$stmt->close();
+
 $conn->close();
 ?>
 
@@ -351,7 +361,7 @@ $conn->close();
         </a>
       </li><!-- End Dashboard Nav -->
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./notifications.php">
+        <a class="nav-link collapsed" href="">
           <i class="bi bi-person"></i>
           <span>Notification</span>
         </a>
@@ -372,7 +382,7 @@ $conn->close();
           <li>
 
 
-            <a href="./apply-loan.php">
+            <a href="">
               <i class="bi bi-circle"></i><span>Active Loans</span>
             </a>
           </li>
@@ -382,7 +392,7 @@ $conn->close();
             </a>
           </li>
 
-          <a href="./repayment.php">
+          <a href="">
               <i class="bi bi-circle"></i><span>Investment History</span>
             </a>
           </li>
@@ -415,12 +425,12 @@ $conn->close();
         </a>
         <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./profile.php">
+            <a href="">
               <i class="bi bi-circle"></i><span>Personal Details</span>
             </a>
           </li>
           <li>
-            <a href="./borrower-bankdetails.php">
+            <a href="">
               <i class="bi bi-circle"></i><span>Bank Details</span>
             </a>
           </li>
@@ -435,21 +445,21 @@ $conn->close();
 
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./faq.php">
+        <a class="nav-link collapsed" href="">
           <i class="bi bi-question-circle"></i>
           <span>F.A.Q</span>
         </a>
       </li><!-- End F.A.Q Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./contact.php">
+        <a class="nav-link collapsed" href="">
           <i class="bi bi-envelope"></i>
           <span>Contact</span>
         </a>
       </li><!-- End Contact Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./login.php">
+        <a class="nav-link collapsed" href="./logout.php">
           <i class="bi bi-box-arrow-in-right"></i>
           <span>Logout</span>
         </a>
@@ -462,7 +472,7 @@ $conn->close();
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Dashboard</h1>
+      <h1>Lender Dashboard</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="./lender_home.php">Home</a></li>
@@ -533,7 +543,7 @@ $conn->close();
                   <h5 class="card-title">Wallet Balance</h5>
 
                   <div class="ps-3">
-                  <h6>₹<?php echo number_format($wallet_balance, 2); ?></h6>
+                  <h6>₹<?php echo number_format($lender_wallet_balance, 2); ?></h6>
                   </div>
                 </div>
 
@@ -577,83 +587,7 @@ $conn->close();
 
             </div><!-- End Customers Card -->
 
-           
-
-            <!-- Recent Sales -->
-            <div class="col-12">
-              <div class="card recent-sales overflow-auto">
-
-                <div class="filter">
-                  <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                    <li class="dropdown-header text-start">
-                      <h6>Filter</h6>
-                    </li>
-
-                    <li><a class="dropdown-item" href="#">Today</a></li>
-                    <li><a class="dropdown-item" href="#">This Month</a></li>
-                    <li><a class="dropdown-item" href="#">This Year</a></li>
-                  </ul>
-                </div>
-
-                <div class="card-body">
-                  <h5 class="card-title">Lenders <span>| Today</span></h5>
-
-                  <table class="table table-borderless datatable">
-                    <thead>
-                      <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Interest</th>
-                        <th scope="col">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <th scope="row"><a href="#">LN1</a></th>
-                        <td>Boss</td>
-                        <td><a href="#" class="text-primary">Person</a></td>
-                        <td>10%</td>
-                        <td><span class="badge bg-success">Approved</span></td>
-                      </tr>
-                      <tr>
-                        <th scope="row"><a href="#">LN2</a></th>
-                        <td>Stephen</td>
-                        <td><a href="#" class="text-primary">Company</a></td>
-                        <td>10%</td>
-                        <td><span class="badge bg-warning">Pending</span></td>
-                      </tr>
-                      <tr>
-                        <th scope="row"><a href="#">LN3</a></th>
-                        <td>Person</td>
-                        <td><a href="#" class="text-primary">Person</a></td>
-                        <td>10%</td>
-                        <td><span class="badge bg-success">Approved</span></td>
-                      </tr>
-                      <tr>
-                        <th scope="row"><a href="#">LN4</a></th>
-                        <td>George</td>
-                        <td><a href="#" class="text-primar">Person</a></td>
-                        <td>5%</td>
-                        <td><span class="badge bg-danger">Rejected</span></td>
-                      </tr>
-                      <tr>
-                        <th scope="row"><a href="#">LN5</a></th>
-                        <td>Bilal</td>
-                        <td><a href="#" class="text-primary">Person</a></td>
-                        <td>6%</td>
-                        <td><span class="badge bg-success">Approved</span></td>
-                      </tr>
-                    </tbody>
-                  </table>
-
-                </div>
-
-              </div>
-            </div><!-- End Recent Sales -->
-
-            <!-- Top Selling -->
+              
             <div class="col-12">
               <div class="card top-selling overflow-auto">
 

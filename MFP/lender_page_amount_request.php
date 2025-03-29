@@ -329,14 +329,14 @@ $conn->close();
         </a>
       </li><!-- End Dashboard Nav -->
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./notifications.php">
+        <a class="nav-link collapsed" href="">
           <i class="bi bi-person"></i>
           <span>Notification</span>
         </a>
       </li><!-- End Profile Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./loan_request.php">
+        <a class="nav-link collapsed" href="loan_request.php">
           <i class="bi bi-person"></i>
           <span>Requests</span>
         </a>
@@ -350,7 +350,7 @@ $conn->close();
           <li>
 
 
-            <a href="./apply-loan.php">
+            <a href="">
               <i class="bi bi-circle"></i><span>Active Loans</span>
             </a>
           </li>
@@ -360,7 +360,7 @@ $conn->close();
             </a>
           </li>
 
-          <a href="./repayment.php">
+          <a href="">
               <i class="bi bi-circle"></i><span>Investment History</span>
             </a>
           </li>
@@ -374,12 +374,12 @@ $conn->close();
         </a>
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./received_payments.php">
-              <i class="bi bi-circle"></i><span>Received Payments </span>
+            <a href="./add_money.php">
+              <i class="bi bi-circle"></i><span>Add Money </span>
             </a>
           </li>
           <li>
-            <a href="./lender_payment-history.php">
+            <a href="./lender_payment_history.php">
               <i class="bi bi-circle"></i><span>Payment History</span>
             </a>
           </li>
@@ -393,12 +393,12 @@ $conn->close();
         </a>
         <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./profile.php">
+            <a href="">
               <i class="bi bi-circle"></i><span>Personal Details</span>
             </a>
           </li>
           <li>
-            <a href="./borrower-bankdetails.php">
+            <a href="">
               <i class="bi bi-circle"></i><span>Bank Details</span>
             </a>
           </li>
@@ -413,21 +413,21 @@ $conn->close();
 
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./faq.php">
+        <a class="nav-link collapsed" href="">
           <i class="bi bi-question-circle"></i>
           <span>F.A.Q</span>
         </a>
       </li><!-- End F.A.Q Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./contact.php">
+        <a class="nav-link collapsed" href="">
           <i class="bi bi-envelope"></i>
           <span>Contact</span>
         </a>
       </li><!-- End Contact Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./login.php">
+        <a class="nav-link collapsed" href="./logout.php">
           <i class="bi bi-box-arrow-in-right"></i>
           <span>Logout</span>
         </a>
