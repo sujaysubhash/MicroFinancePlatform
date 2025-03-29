@@ -26,18 +26,27 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch pending loan applications
-$sql = "SELECT la.loanid, b.name AS borrower_name, 
-        la.requested_loan_amount AS loan_amount, la.interest_rate, la.status, la.loan_duration
+// Fetch loan repayment details for borrowers funded by the lender
+$sql = "SELECT la.loanid, b.name AS borrower_name, b.funded_amount, la.requested_loan_amount, 
+               la.interest_rate, la.status, la.loan_duration, b.wallet_balance
         FROM loan_application la
         JOIN borrower b ON la.borrower_id = b.user_id
-        WHERE la.status = 'pending'";
+        WHERE la.lender_id = ?";
 
-$result = $conn->query($sql);
-$requested_loans = [];
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$loans = [];
 while ($row = $result->fetch_assoc()) {
-    $requested_loans[] = $row;
+    // Calculate total amount including interest
+    $total_repayable_amount = $row['requested_loan_amount'] + ($row['requested_loan_amount'] * $row['interest_rate'] / 100);
+    $row['monthly_installment'] = $total_repayable_amount / $row['loan_duration'];
+    $row['total_repayable_amount'] = $total_repayable_amount;
+    $loans[] = $row;
 }
+$stmt->close();
 $conn->close();
 ?>
 
@@ -433,53 +442,60 @@ $conn->close();
   </aside><!-- End Sidebar-->
 
   <main id="main" class="main">
-  <div class="container mt-5">
-        <h2 class="text-center">Repayment History</h2>
-        
-        <div class="card mt-4">
-            <div class="card-body">
-                <h5 class="card-title">Loan Repayment Summary</h5>
-                <p><strong>Total Loan Duration:</strong> 3 Months</p>
-                <p><strong>Paid Installments:</strong> 1</p>
-                <p><strong>Remaining Installments:</strong> 2</p>
-                
-                <div class="progress">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: 33%" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100">33% Paid</div>
-                </div>
-            </div>
-        </div>
-
-        <table class="table table-bordered mt-4">
-            <thead class="table-dark">
-                <tr>
-                    <th>Month</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>January</td>
-                    <td>₹5000</td>
-                    <td><span class="badge bg-success">Paid</span></td>
-                    <td>-</td>
-                </tr>
-                <tr>
-                    <td>February</td>
-                    <td>₹5000</td>
-                    <td><span class="badge bg-warning text-dark">Pending</span></td>
-                    <td><button class="btn btn-primary btn-sm">Pay Now</button></td>
-                </tr>
-                <tr>
-                    <td>March</td>
-                    <td>₹5000</td>
-                    <td><span class="badge bg-warning text-dark">Pending</span></td>
-                    <td><button class="btn btn-primary btn-sm">Pay Now</button></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+  <h2 class="text-center">Borrower Repayment History</h2>
+  
+  <?php if (!empty($loans)) : ?>
+      <?php foreach ($loans as $loan) : ?>
+          <div class="card mt-4">
+              <div class="card-body">
+                  <h5 class="card-title">Loan Repayment Summary - <?php echo htmlspecialchars($loan['borrower_name']); ?></h5>
+                  <p><strong>Loan Amount:</strong> ₹<?php echo number_format($loan['requested_loan_amount'], 2); ?></p>
+                  <p><strong>Interest Rate:</strong> <?php echo $loan['interest_rate']; ?>%</p>
+                  <p><strong>Total Repayable Amount:</strong> ₹<?php echo number_format($loan['total_repayable_amount'], 2); ?></p>
+                  <p><strong>Loan Duration:</strong> <?php echo $loan['loan_duration']; ?> Months</p>
+                  <p><strong>Funded Amount:</strong> ₹<?php echo number_format($loan['funded_amount'], 2); ?></p>
+                  <p><strong>Remaining Balance:</strong> ₹<?php echo number_format($loan['wallet_balance'], 2); ?></p>
+                  
+                  <?php 
+                  $paid_installments = round(($loan['funded_amount'] - $loan['wallet_balance']) / $loan['monthly_installment']);
+                  $remaining_installments = $loan['loan_duration'] - $paid_installments;
+                  $progress = ($paid_installments / $loan['loan_duration']) * 100;
+                  ?>
+                  
+                  <div class="progress">
+                      <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $progress; ?>%" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuemax="100"><?php echo round($progress); ?>% Paid</div>
+                  </div>
+              </div>
+          </div>
+          
+          <table class="table table-bordered mt-4">
+              <thead class="table-dark">
+                  <tr>
+                      <th>Month</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <?php for ($i = 1; $i <= $loan['loan_duration']; $i++) : ?>
+                      <tr>
+                          <td>Month <?php echo $i; ?></td>
+                          <td>₹<?php echo number_format($loan['monthly_installment'], 2); ?></td>
+                          <td>
+                              <?php if ($i <= $paid_installments) : ?>
+                                  <span class="badge bg-success">Paid</span>
+                              <?php else : ?>
+                                  <span class="badge bg-warning text-dark">Pending</span>
+                              <?php endif; ?>
+                          </td>
+                      </tr>
+                  <?php endfor; ?>
+              </tbody>
+          </table>
+      <?php endforeach; ?>
+  <?php else : ?>
+      <p class="text-center mt-4">No repayment history available.</p>
+  <?php endif; ?>
     
 </main>
 

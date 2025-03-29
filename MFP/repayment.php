@@ -526,36 +526,40 @@ function addToWallet() {
         fetch('update_wallet.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'action=add&amount=' + amount
+            body: `action=add&amount=${amount}`
         })
         .then(response => response.json())
-        .then(data => updateWalletDisplay(data.new_balance));
+        .then(data => {
+            if (data.success) {
+                updateWalletDisplay(data.new_balance);
+            } else {
+                alert(data.message);
+            }
+        });
         document.getElementById('addAmount').value = '';
     }
 }
 
 function manualPayment() {
     const amount = parseFloat(document.getElementById('repaymentAmount').value);
-    const lenderId = 1; // Replace with the actual lender ID (select dynamically if needed)
 
     if (amount > 0) {
         fetch('update_wallet.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `action=deduct&amount=${amount}&lender_id=${lenderId}`
+            body: `action=deduct&amount=${amount}`
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 updateWalletDisplay(data.new_balance);
-                document.getElementById('paymentStatus').innerHTML = `<div class="alert alert-success">₹${amount} successfully transferred to the lender.</div>`;
+                document.getElementById('paymentStatus').innerHTML = `<div class="alert alert-success">₹${amount} successfully transferred.</div>`;
             } else {
                 document.getElementById('paymentStatus').innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
             }
         });
     }
 }
-
 
 
 </script>

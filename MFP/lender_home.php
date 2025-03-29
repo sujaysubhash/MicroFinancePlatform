@@ -396,8 +396,8 @@ $conn->close();
         </a>
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./received_payments.php">
-              <i class="bi bi-circle"></i><span>Received Payments </span>
+            <a href="./add_money.php">
+              <i class="bi bi-circle"></i><span>Add Money </span>
             </a>
           </li>
           <li>

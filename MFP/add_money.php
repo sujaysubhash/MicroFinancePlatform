@@ -411,8 +411,8 @@ $conn->close();
         </a>
         <ul id="forms-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./received_payments.php" class="active">
-              <i class="bi bi-circle"></i><span>Received Payments </span>
+            <a href="./add_money.php" class="active">
+              <i class="bi bi-circle"></i><span>Add Money</span>
             </a>
           </li>
           <li>
@@ -492,13 +492,13 @@ $conn->close();
                         </div>
                     </div>
 
-                    <div class="mb-3">
+                    <!-- <div class="mb-3">
                         <label for="deductAmount" class="form-label">Fund Loan</label>
                         <div class="input-group">
                             <input type="number" id="deductAmount" class="form-control" placeholder="Enter amount to fund">
-                            <button class="btn btn-danger" onclick="deductFromWallet(<?php echo $loan_id ?? 'null'; ?>)">Fund Loan</button>
+                            <button class="btn btn-danger" onclick="deductFromWallet(/*<?php echo $loan_id ?? 'null'; ?>)">Fund Loan</button>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div id="transactionStatus"></div>
                 </div>
