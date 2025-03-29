@@ -354,7 +354,7 @@ $conn->close();
           <li>
 
 
-            <a href="">
+            <a href="./lender_payment_history.php">
               <i class="bi bi-circle"></i><span>Active Loans</span>
             </a>
           </li>

@@ -175,45 +175,28 @@ $result = $conn->query($sql);
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./lender_home.php">
+        <a class="nav-link collapsed" href="./admin_home.php">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
       </li><!-- End Dashboard Nav -->
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="">
-          <i class="bi bi-person"></i>
-          <span>Notification</span>
-        </a>
-      </li><!-- End Profile Page Nav -->
+
 
       <li class="nav-item">
-        <a class="nav-link active" href="loan_request.php">
-          <i class="bi bi-person"></i>
-          <span>Requests</span>
+        <a class="nav-link active" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-menu-button-wide"></i><span>Lenders</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-      </li><!-- End Profile Page Nav -->
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-menu-button-wide"></i><span>Investment</span><i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="components-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
           <li>
 
 
-            <a href="">
-              <i class="bi bi-circle"></i><span>Active Loans</span>
+            <a href="./lender_request.php" class="active">
+              <i class="bi bi-circle"></i><span>Lender Request</span>
             </a>
           </li>
 
-          <a href="./lender_page_amount_request.php">
-              <i class="bi bi-circle"></i><span>Amount Request</span>
-            </a>
-          </li>
-
-          <a href="">
-              <i class="bi bi-circle"></i><span>Investment History</span>
+          <a href="./add_lender.php">
+              <i class="bi bi-circle"></i><span>Add lender</span>
             </a>
           </li>
           
@@ -226,38 +209,14 @@ $result = $conn->query($sql);
         </a>
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./add_money.php">
-              <i class="bi bi-circle"></i><span>Add Money </span>
+            <a href="">
+              <i class="bi bi-circle"></i><span>All Payments</span>
             </a>
           </li>
-          <li>
-            <a href="./lender_payment_history.php">
-              <i class="bi bi-circle"></i><span>Payment History</span>
-            </a>
-          </li>
+         
           
         </ul>
       </li><!-- End Forms Nav -->
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-bar-chart"></i><span>Profile</span><i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-        <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-          <li>
-            <a href="">
-              <i class="bi bi-circle"></i><span>Personal Details</span>
-            </a>
-          </li>
-          <li>
-            <a href="">
-              <i class="bi bi-circle"></i><span>Bank Details</span>
-            </a>
-          </li>
-
-        </ul>
-      </li><!-- End Charts Nav -->
-
 
       <li class="nav-heading">Pages</li>
      
@@ -265,16 +224,16 @@ $result = $conn->query($sql);
 
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="">
+        <a class="nav-link collapsed" href="./admin_reviews.php">
           <i class="bi bi-question-circle"></i>
-          <span>F.A.Q</span>
+          <span>Reviews</span>
         </a>
       </li><!-- End F.A.Q Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="">
+        <a class="nav-link collapsed" href="./admin_assistance.php">
           <i class="bi bi-envelope"></i>
-          <span>Contact</span>
+          <span>Assistance</span>
         </a>
       </li><!-- End Contact Page Nav -->
 

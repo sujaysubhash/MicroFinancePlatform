@@ -387,7 +387,7 @@ $conn->close();
       <li>
 
 
-        <a href="">
+        <a href="./lender_payment_history.php">
           <i class="bi bi-circle"></i><span>Active Loans</span>
         </a>
       </li>
@@ -474,7 +474,7 @@ $conn->close();
 
 </aside><!-- End Sidebar-->
 
-  <main class="container my-5">
+  <main class="container my-5" style = "padding-left:15rem">
     <br>
     <h2 class="text-center mb-4">Lender Wallet - MFP</h2>
     <div class="row">

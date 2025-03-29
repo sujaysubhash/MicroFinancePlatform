@@ -222,10 +222,10 @@ $conn->close();
 
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link active" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-menu-button-wide"></i><span>Lenders</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="components-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
           <li>
 
 
@@ -234,7 +234,7 @@ $conn->close();
             </a>
           </li>
 
-          <a href="./add_lender.php">
+          <a href="./add_lender.php" class="active">
               <i class="bi bi-circle"></i><span>Add lender</span>
             </a>
           </li>
@@ -248,7 +248,7 @@ $conn->close();
         </a>
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./repayment.php">
+            <a href="">
               <i class="bi bi-circle"></i><span>All Payments</span>
             </a>
           </li>
