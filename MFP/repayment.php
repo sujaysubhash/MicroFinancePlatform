@@ -457,7 +457,7 @@ $conn->close();
           </div>
         </div>
         
-        <div class="card shadow-sm mb-4">
+        <!-- <div class="card shadow-sm mb-4">
           <div class="card-body">
             <h5 class="card-title">Manual Loan Repayment</h5>
             <form id="manualPaymentForm">
@@ -469,7 +469,7 @@ $conn->close();
             </form>
             <div id="paymentStatus" class="mt-3"></div>
           </div>
-        </div>
+        </div> -->
         
         <div class="card shadow-sm mb-4">
           <div class="card-body">
