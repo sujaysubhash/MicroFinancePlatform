@@ -1,4 +1,4 @@
-<?php
+<?php 
 session_start();
 
 // Check if the user is logged in and is a lender
@@ -96,6 +96,37 @@ $stmt->close();
 $update_loan = "UPDATE loan_application SET status = 'funded' WHERE loanid = ?";
 $stmt = $conn->prepare($update_loan);
 $stmt->bind_param("i", $loan_id);
+$stmt->execute();
+$stmt->close();
+
+// Fetch borrower name
+$borrower_query = "SELECT name FROM users WHERE id = ?";
+$stmt = $conn->prepare($borrower_query);
+$stmt->bind_param("i", $borrower_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$borrower = $result->fetch_assoc();
+$borrower_name = $borrower['name'];
+$stmt->close();
+
+// Fetch lender name
+$lender_query = "SELECT name FROM users WHERE id = ?";
+$stmt = $conn->prepare($lender_query);
+$stmt->bind_param("i", $lender_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$lender = $result->fetch_assoc();
+$lender_name = $lender['name'];
+$stmt->close();
+
+// Insert notification
+$notification_message = "Loan approved and funded to {$borrower_name} by {$lender_name}.";
+$notification_type = "Loan Approved";
+$notification_status = "Unread";
+
+$insert_notification = "INSERT INTO notifications (user_id, loan_id, message, type, status) VALUES (?, ?, ?, ?, ?)";
+$stmt = $conn->prepare($insert_notification);
+$stmt->bind_param("iisss", $borrower_id, $loan_id, $notification_message, $notification_type, $notification_status);
 $stmt->execute();
 $stmt->close();
 

@@ -35,56 +35,50 @@ $stmt->bind_result($loan_count);
 $stmt->fetch();
 $stmt->close();
 
+// Fetch lender's details from session
+$lender_id = $_SESSION['user_id'];
 
-// Fetch total funded amount and count of lender responses
-$funded_amount = 0;
-$lender_responded_count = 0;
-$sql = "SELECT SUM(funded_amount) AS total_funded, COUNT(lender_responded) AS total_lenders FROM borrower";
-$result = $conn->query($sql);
+// Database connection
+$host = "localhost";
+$dbname = "mfp_database";
+$username = "root";
+$password = "";
+$conn = new mysqli($host, $username, $password, $dbname);
 
-if ($result && $row = $result->fetch_assoc()) {
-    $funded_amount = $row['total_funded'] ?? 0;
-    $lender_responded_count = $row['total_lenders'] ?? 0;
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch wallet balance
-$wallet_balance = 0;
-$sql = "SELECT wallet_balance FROM borrower WHERE user_id = ?";
+// Fetch loan count from borrower table
+$loan_count = 0;
+$sql = "SELECT COUNT(*) AS total_loans FROM borrower WHERE user_id = ?";  
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
-$stmt->bind_result($wallet_balance);
+$stmt->bind_result($loan_count);
 $stmt->fetch();
 $stmt->close();
 
-// Fetch lenders data
-$lenders = [];
-$sql = "SELECT name, interest_rate, available_funds, experience FROM lenders";
-$result = $conn->query($sql);
+// Fetch notifications only for loans funded by this lender
+$query = "SELECT n.message, n.type, n.created_at FROM notifications n 
+          JOIN loan_application l ON n.loan_id = l.loanid 
+          WHERE l.lender_id = ? 
+          ORDER BY n.created_at DESC";
 
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $lenders[] = $row;
-    }
-}
-
-
-// Fetch latest 5 news articles
-$sql = "SELECT * FROM news_updates ORDER BY created_at DESC LIMIT 5";
-$result = $conn->query($sql);
-
-// Fetch wallet balance for lender
-$lender_wallet_balance = 0;
-$sql = "SELECT wallet_balance FROM lenders WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $lender_id);
 $stmt->execute();
-$stmt->bind_result($lender_wallet_balance);
-$stmt->fetch();
-$stmt->close();
+$result = $stmt->get_result();
 
+$notifications = [];
+while ($row = $result->fetch_assoc()) {
+    $notifications[] = $row;
+}
+$stmt->close();
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -355,13 +349,13 @@ $conn->close();
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link " href="./lender_home.php">
+        <a class="nav-link collapsed" href="./lender_home.php">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
       </li><!-- End Dashboard Nav -->
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./lender_notification.php">
+        <a class="nav-link active" href="">
           <i class="bi bi-person"></i>
           <span>Notification</span>
         </a>
@@ -471,215 +465,37 @@ $conn->close();
 
   <main id="main" class="main">
 
-    <div class="pagetitle">
-      <h1>Lender Dashboard</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="./lender_home.php">Home</a></li>
-          <li class="breadcrumb-item active">Dashboard</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
-    <section class="section dashboard">
-      <div class="row">
-
-        <!-- Left side columns -->
-        <div class="col-lg-8">
-          <div class="row">
-
-            <!-- Sales Card -->
-            <div class="col-xxl-4 col-md-6">
-              <div class="card info-card sales-card">
-
-                <div class="filter">
-                  <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                    <li class="dropdown-header text-start">
-                      <h6>Filter</h6>
-                    </li>
-
-                    <li><a class="dropdown-item" href="#">Today</a></li>
-                    <li><a class="dropdown-item" href="#">This Month</a></li>
-                    <li><a class="dropdown-item" href="#">This Year</a></li>
-                  </ul>
-                </div>
-
-                <div class="card-body">
-                  <h5 class="card-title">Loans <span>| Today</span></h5>
-
-                  <div class="d-flex align-items-center">
-                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                      <i class="bi bi-cart"></i>
+  <h2 class="text-center mb-4">Lender Notifications</h2>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-lg border-0 rounded-3">
+                    <div class="card-body">
+                        <?php if (empty($notifications)): ?>
+                            <p class="text-center text-muted">No notifications found.</p>
+                        <?php else: ?>
+                            <table class="table table-hover table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Message</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($notifications as $notification): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($notification['message']); ?></td>
+                                            <td><?php echo htmlspecialchars($notification['type']); ?></td>
+                                            <td><?php echo htmlspecialchars(date("F j, Y, g:i a", strtotime($notification['created_at']))); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php endif; ?>
                     </div>
-                    <div class="ps-3">
-                      <h6><?php echo $loan_count; ?></h6> <!-- Dynamic Loan Count -->
-                      <span class="text-success small pt-1 fw-bold">12%</span> <span class="text-muted small pt-2 ps-1">increase</span>
-
-                    </div>
-                  </div>
                 </div>
-
-              </div>
-            </div><!-- End Sales Card -->
-
-            <div class="col-xxl-4 col-md-6">
-              <div class="card info-card revenue-card">
-
-                <div class="filter">
-                  <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                    <li class="dropdown-header text-start">
-                      <h6>Filter</h6>
-                    </li>
-
-                    <li><a class="dropdown-item" href="#">Today</a></li>
-                    <li><a class="dropdown-item" href="#">This Month</a></li>
-                    <li><a class="dropdown-item" href="#">This Year</a></li>
-                  </ul>
-                </div>
-
-                <div class="card-body">
-                  <h5 class="card-title">Wallet Balance</h5>
-
-                  <div class="ps-3">
-                  <h6>₹<?php echo number_format($lender_wallet_balance, 2); ?></h6>
-                  </div>
-                </div>
-
-              </div>
-            </div><!-- End Revenue Card -->
-
-            <!-- Customers Card -->
-            <div class="col-xxl-4 col-xl-12">
-
-              <div class="card info-card customers-card">
-
-                <div class="filter">
-                  <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                    <li class="dropdown-header text-start">
-                      <h6>Filter</h6>
-                    </li>
-
-                    <li><a class="dropdown-item" href="#">Today</a></li>
-                    <li><a class="dropdown-item" href="#">This Month</a></li>
-                    <li><a class="dropdown-item" href="#">This Year</a></li>
-                  </ul>
-                </div>
-
-                <div class="card-body">
-                  <h5 class="card-title">Borrowers <span>| This Year</span></h5>
-
-                  <div class="d-flex align-items-center">
-                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                      <i class="bi bi-people"></i>
-                    </div>
-                    <div class="ps-3">
-                    <h6><?php echo $lender_responded_count; ?></h6>
-                    <span class="text-danger small pt-1 fw-bold">0</span> <span class="text-muted small pt-2 ps-1">Response</span>
-
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-            </div><!-- End Customers Card -->
-
-              
-            <div class="col-12">
-              <div class="card top-selling overflow-auto">
-
-                <div class="filter">
-                  <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                    <li class="dropdown-header text-start">
-                      <h6>Filter</h6>
-                    </li>
-
-                    <li><a class="dropdown-item" href="#">Today</a></li>
-                    <li><a class="dropdown-item" href="#">This Month</a></li>
-                    <li><a class="dropdown-item" href="#">This Year</a></li>
-                  </ul>
-                </div>
-
-                <div class="card-body pb-0">
-                  <h5 class="card-title">Top Rated <span>| This Month</span></h5>
-
-                  <table class="table table-borderless">
-                    <thead>
-                      <tr>
-                        <th scope="col">Name</th>
-                        <th scope="col">Interest</th>
-                        <th scope="col">Funding Limit</th>
-                        <th scope="col">Experience</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($lenders as $lender): ?>
-                          <tr>
-                              <td><a href="#" class="text-primary fw-bold"><?php echo htmlspecialchars($lender['name']); ?></a></td>
-                              <td><?php echo htmlspecialchars($lender['interest_rate']); ?></td>
-                              <td class="fw-bold">₹<?php echo number_format($lender['available_funds']); ?></td>
-                              <td><?php echo htmlspecialchars($lender['experience']); ?> years</td>
-                          </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                  </table>
-
-                </div>
-
-              </div>
-            </div><!-- End Top Selling -->
-
-          </div>
-        </div><!-- End Left side columns -->
-
-        <!-- Right side columns -->
-        <div class="col-lg-4">
-
-
-  
-        <!-- News & Updates Traffic -->
-        <div class="card">
-            <div class="filter">
-                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                    <li class="dropdown-header text-start">
-                        <h6>Filter</h6>
-                    </li>
-                    <li><a class="dropdown-item" href="#">Today</a></li>
-                    <li><a class="dropdown-item" href="#">This Month</a></li>
-                    <li><a class="dropdown-item" href="#">This Year</a></li>
-                </ul>
             </div>
-
-            <div class="card-body pb-0">
-                <h5 class="card-title">News &amp; Updates <span>| Latest</span></h5>
-
-                <div class="news">
-                    <?php
-                    if ($result->num_rows > 0) {
-                        while ($row = $result->fetch_assoc()) {
-                            echo '<div class="post-item clearfix">
-                                    <img src="' . $row["image_url"] . '" alt="">
-                                    <h4><a href="#">' . $row["title"] . '</a></h4>
-                                    <p>' . substr($row["content"], 0, 100) . '...</p>
-                                  </div>';
-                        }
-                    } else {
-                        echo '<p>No news available.</p>';
-                    }
-                    ?>
-                </div><!-- End sidebar recent posts -->
-            </div>
-        </div><!-- End News & Updates -->
-                  
-
-        </div><!-- End Right side columns -->
-
-      </div>
+        </div>
     </section>
 
   </main><!-- End #main -->
@@ -710,4 +526,3 @@ $conn->close();
 
 </body>
 
-</html>
