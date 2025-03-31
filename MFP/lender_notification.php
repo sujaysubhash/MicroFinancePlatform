@@ -75,6 +75,9 @@ $notifications = [];
 while ($row = $result->fetch_assoc()) {
     $notifications[] = $row;
 }
+
+
+
 $stmt->close();
 $conn->close();
 ?>
@@ -133,86 +136,50 @@ $conn->close();
     </div><!-- End Search Bar -->
 
     <nav class="header-nav ms-auto">
+    <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
 
-        <li class="nav-item d-block d-lg-none">
-          <a class="nav-link nav-icon search-bar-toggle " href="#">
-            <i class="bi bi-search"></i>
-          </a>
-        </li><!-- End Search Icon-->
+                <li class="nav-item d-block d-lg-none">
+                  <a class="nav-link nav-icon search-bar-toggle " href="#">
+                    <i class="bi bi-search"></i>
+                  </a>
+                </li><!-- End Search Icon-->
 
-        <li class="nav-item dropdown">
+                <li class="nav-item dropdown">
 
-          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-bell"></i>
-            <span class="badge bg-primary badge-number">4</span>
-          </a><!-- End Notification Icon -->
+                  <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+                    <i class="bi bi-bell"></i>
+                    <span class="badge bg-primary badge-number">4</span>
+                  </a><!-- End Notification Icon -->
 
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
             <li class="dropdown-header">
-              You have 4 new notifications
-              <a href="#"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
+                You have <?= count($notifications) ?> new notifications
+                <a href="./lender_notification.php"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
             </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
+            <li><hr class="dropdown-divider"></li>
 
-            <li class="notification-item">
-              <i class="bi bi-exclamation-circle text-warning"></i>
-              <div>
-                <h4>Lorem Ipsum</h4>
-                <p>Quae dolorem earum veritatis oditseno</p>
-                <p>30 min. ago</p>
-              </div>
-            </li>
-
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li class="notification-item">
-              <i class="bi bi-x-circle text-danger"></i>
-              <div>
-                <h4>Atque rerum nesciunt</h4>
-                <p>Quae dolorem earum veritatis oditseno</p>
-                <p>1 hr. ago</p>
-              </div>
-            </li>
-
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li class="notification-item">
-              <i class="bi bi-check-circle text-success"></i>
-              <div>
-                <h4>Sit rerum fuga</h4>
-                <p>Quae dolorem earum veritatis oditseno</p>
-                <p>2 hrs. ago</p>
-              </div>
-            </li>
-
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li class="notification-item">
-              <i class="bi bi-info-circle text-primary"></i>
-              <div>
-                <h4>Dicta reprehenderit</h4>
-                <p>Quae dolorem earum veritatis oditseno</p>
-                <p>4 hrs. ago</p>
-              </div>
-            </li>
-
-            <li>
-              <hr class="dropdown-divider">
-            </li>
+            <?php if (!empty($notifications)): ?>
+                <?php foreach ($notifications as $notification): ?>
+                    <li class="notification-item">
+                        <i class="bi bi-info-circle text-primary"></i>
+                        <div>
+                            <h4><?= htmlspecialchars($notification['type']) ?></h4>
+                            <p><?= date('F j, Y, g:i a', strtotime($notification['created_at'])) ?></p>
+                        </div>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <li class="notification-item text-center">
+                    <p>No new notifications</p>
+                </li>
+            <?php endif; ?>
+            
             <li class="dropdown-footer">
-              <a href="#">Show all notifications</a>
+                <a href="./lender_notification.php">Show all notifications</a>
             </li>
-
-          </ul><!-- End Notification Dropdown Items -->
+    </ul>
 
         </li><!-- End Notification Nav -->
 
@@ -465,40 +432,48 @@ $conn->close();
 
   <main id="main" class="main">
 
-  <h2 class="text-center mb-4">Lender Notifications</h2>
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card shadow-lg border-0 rounded-3">
-                    <div class="card-body">
-                        <?php if (empty($notifications)): ?>
-                            <p class="text-center text-muted">No notifications found.</p>
-                        <?php else: ?>
-                            <table class="table table-hover table-bordered">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Message</th>
-                                        <th>Type</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($notifications as $notification): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($notification['message']); ?></td>
-                                            <td><?php echo htmlspecialchars($notification['type']); ?></td>
-                                            <td><?php echo htmlspecialchars(date("F j, Y, g:i a", strtotime($notification['created_at']))); ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        <?php endif; ?>
-                    </div>
-                </div>
+    <h2 class="text-center mb-4">Lender Notifications</h2>
+    <div class="container d-flex justify-content-center">
+        <?php if (empty($notifications)): ?>
+            <div class="alert alert-info text-center w-50" role="alert">
+                <i class="bi bi-info-circle"></i> No new notifications.
             </div>
-        </div>
-    </section>
+        <?php else: ?>
+            <div class="d-flex flex-wrap justify-content-center gap-4">
+                <?php foreach ($notifications as $notification): ?>
+                    <div class="card shadow-lg border-0 rounded-3 p-3" style="width: 24rem;">
+                        <div class="card-body text-center">
+                            <?php 
+                                // Dynamic Icon Based on Notification Type
+                                $iconClass = "bi-info-circle text-primary";
+                                if ($notification['type'] == "Warning") {
+                                    $iconClass = "bi-exclamation-circle text-warning";
+                                } elseif ($notification['type'] == "Error") {
+                                    $iconClass = "bi-x-circle text-danger";
+                                } elseif ($notification['type'] == "Success") {
+                                    $iconClass = "bi-check-circle text-success";
+                                }
+                            ?>
+                            <i class="bi <?= $iconClass; ?> fs-1"></i>
+                            <h4 class="card-title mt-3 text-dark">
+                                <?= htmlspecialchars($notification['type']); ?>
+                            </h4>
+                            <p class="card-text text-muted fs-6">
+                                <?= htmlspecialchars($notification['message']); ?>
+                            </p>
+                            <p class="small text-muted">
+                                <i class="bi bi-clock"></i> 
+                                <?= date("F j, Y, g:i a", strtotime($notification['created_at'])); ?>
+                            </p>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
 
-  </main><!-- End #main -->
+</main> <!-- End #main -->
+
 
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">

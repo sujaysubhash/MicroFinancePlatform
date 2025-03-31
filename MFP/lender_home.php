@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Fetch user's details from session
-$user_id = $_SESSION['user_id'];
+$lender_id = $_SESSION['user_id']; // Since lenders have 'id', use user_id directly
 $user_name = $_SESSION['user_name'] ?? 'Guest';
 $user_role = $_SESSION['user_role'] ?? 'User'; // Default role if not set
 $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
@@ -29,12 +29,11 @@ if ($conn->connect_error) {
 $loan_count = 0;
 $sql = "SELECT COUNT(*) AS total_loans FROM borrower WHERE user_id = ?";  
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("i", $lender_id);
 $stmt->execute();
 $stmt->bind_result($loan_count);
 $stmt->fetch();
 $stmt->close();
-
 
 // Fetch total funded amount and count of lender responses
 $funded_amount = 0;
@@ -47,11 +46,13 @@ if ($result && $row = $result->fetch_assoc()) {
     $lender_responded_count = $row['total_lenders'] ?? 0;
 }
 
+
+
 // Fetch wallet balance
 $wallet_balance = 0;
 $sql = "SELECT wallet_balance FROM borrower WHERE user_id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("i", $lender_id);
 $stmt->execute();
 $stmt->bind_result($wallet_balance);
 $stmt->fetch();
@@ -68,23 +69,43 @@ if ($result->num_rows > 0) {
     }
 }
 
-
 // Fetch latest 5 news articles
 $sql = "SELECT * FROM news_updates ORDER BY created_at DESC LIMIT 5";
 $result = $conn->query($sql);
 
 // Fetch wallet balance for lender
 $lender_wallet_balance = 0;
-$sql = "SELECT wallet_balance FROM lenders WHERE id = ?";
+$sql = "SELECT wallet_balance FROM lenders WHERE id = ?"; // Use 'id' instead of 'user_id'
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("i", $lender_id);
 $stmt->execute();
 $stmt->bind_result($lender_wallet_balance);
 $stmt->fetch();
 $stmt->close();
 
-$conn->close();
+// Fetch notifications for the logged-in lender
+$notifications = [];
+$query = "SELECT n.type, n.created_at FROM notifications n 
+          JOIN loan_application l ON n.loan_id = l.loanid 
+          WHERE l.lender_id = ? 
+          ORDER BY n.created_at DESC";
+
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $lender_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+while ($row = $result->fetch_assoc()) {
+    $notifications[] = $row;
+}
+$stmt->close();
+
+
+// Fetch latest 5 news articles
+$sql = "SELECT * FROM news_updates ORDER BY created_at DESC LIMIT 5";
+$result = $conn->query($sql);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -141,84 +162,47 @@ $conn->close();
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
 
-        <li class="nav-item d-block d-lg-none">
-          <a class="nav-link nav-icon search-bar-toggle " href="#">
-            <i class="bi bi-search"></i>
-          </a>
-        </li><!-- End Search Icon-->
+                <li class="nav-item d-block d-lg-none">
+                  <a class="nav-link nav-icon search-bar-toggle " href="#">
+                    <i class="bi bi-search"></i>
+                  </a>
+                </li><!-- End Search Icon-->
 
-        <li class="nav-item dropdown">
+                <li class="nav-item dropdown">
 
-          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-bell"></i>
-            <span class="badge bg-primary badge-number">4</span>
-          </a><!-- End Notification Icon -->
+                  <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+                    <i class="bi bi-bell"></i>
+                    <span class="badge bg-primary badge-number">4</span>
+                  </a><!-- End Notification Icon -->
 
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
             <li class="dropdown-header">
-              You have 4 new notifications
-              <a href="#"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
+                You have <?= count($notifications) ?> new notifications
+                <a href="./lender_notification.php"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
             </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
+            <li><hr class="dropdown-divider"></li>
 
-            <li class="notification-item">
-              <i class="bi bi-exclamation-circle text-warning"></i>
-              <div>
-                <h4>Lorem Ipsum</h4>
-                <p>Quae dolorem earum veritatis oditseno</p>
-                <p>30 min. ago</p>
-              </div>
-            </li>
-
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li class="notification-item">
-              <i class="bi bi-x-circle text-danger"></i>
-              <div>
-                <h4>Atque rerum nesciunt</h4>
-                <p>Quae dolorem earum veritatis oditseno</p>
-                <p>1 hr. ago</p>
-              </div>
-            </li>
-
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li class="notification-item">
-              <i class="bi bi-check-circle text-success"></i>
-              <div>
-                <h4>Sit rerum fuga</h4>
-                <p>Quae dolorem earum veritatis oditseno</p>
-                <p>2 hrs. ago</p>
-              </div>
-            </li>
-
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li class="notification-item">
-              <i class="bi bi-info-circle text-primary"></i>
-              <div>
-                <h4>Dicta reprehenderit</h4>
-                <p>Quae dolorem earum veritatis oditseno</p>
-                <p>4 hrs. ago</p>
-              </div>
-            </li>
-
-            <li>
-              <hr class="dropdown-divider">
-            </li>
+            <?php if (!empty($notifications)): ?>
+                <?php foreach ($notifications as $notification): ?>
+                    <li class="notification-item">
+                        <i class="bi bi-info-circle text-primary"></i>
+                        <div>
+                            <h4><?= htmlspecialchars($notification['type']) ?></h4>
+                            <p><?= date('F j, Y, g:i a', strtotime($notification['created_at'])) ?></p>
+                        </div>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <li class="notification-item text-center">
+                    <p>No new notifications</p>
+                </li>
+            <?php endif; ?>
+            
             <li class="dropdown-footer">
-              <a href="#">Show all notifications</a>
+                <a href="./lender_notification.php">Show all notifications</a>
             </li>
-
-          </ul><!-- End Notification Dropdown Items -->
+    </ul>
 
         </li><!-- End Notification Nav -->
 
@@ -514,7 +498,6 @@ $conn->close();
                     </div>
                     <div class="ps-3">
                       <h6><?php echo $loan_count; ?></h6> <!-- Dynamic Loan Count -->
-                      <span class="text-success small pt-1 fw-bold">12%</span> <span class="text-muted small pt-2 ps-1">increase</span>
 
                     </div>
                   </div>
