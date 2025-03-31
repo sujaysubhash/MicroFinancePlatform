@@ -61,6 +61,8 @@ $stmt->bind_param("i", $lender_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
+
+
 if ($result->num_rows === 0) {
     $_SESSION['error_message'] = "Lender not found.";
     header("Location: lender_page_amount_request.php");

@@ -473,9 +473,9 @@ $conn->close();
                                 
                                 <form method="POST" action="accept_loan.php" class="d-inline accept-form">
                                 <input type="hidden" name="loanid" value="<?php echo $row['loanid']; ?>">
-                                  <button type="submit" class="btn btn-primary btn-sm accept-btn">
-                                      Accept Loan Request
-                                  </button>
+                                      <button type="submit" class="btn btn-primary btn-sm accept-btn">
+                                          Accept Loan Request
+                                      </button>
                                 </form>
 
                             </div>
@@ -517,6 +517,47 @@ $conn->close();
   <script src="assets/js/main.js"></script>
 
   <script>
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".accept-form").forEach(form => {
+        let button = form.querySelector(".accept-btn");
+        let loanId = form.querySelector("input[name='loanid']").value;
+
+        // Check if this loan was already accepted
+        if (localStorage.getItem("accepted_" + loanId)) {
+            button.textContent = "Accepted";
+            button.classList.remove("btn-primary");
+            button.classList.add("btn-success");
+            button.disabled = true;
+        }
+
+        form.addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent immediate form submission
+
+            button.textContent = "Accepted";
+            button.classList.remove("btn-primary");
+            button.classList.add("btn-success");
+            button.disabled = true;
+
+            // Store the accepted state in localStorage
+            localStorage.setItem("accepted_" + loanId, true);
+
+            // Submit the form after a short delay
+            setTimeout(() => {
+                this.submit(); // Submit after updating UI
+            }, 500);
+        });
+    });
+
+    // Extra Feature: Clear accepted loan states when logged out
+    if (!sessionStorage.getItem("userLoggedIn")) {
+        localStorage.clear(); // Clear all stored accepted loan states
+    }
+});
+
+// Mark user as logged in (for session management)
+sessionStorage.setItem("userLoggedIn", "true");
     document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".accept-form").forEach(form => {
         let button = form.querySelector(".accept-btn");

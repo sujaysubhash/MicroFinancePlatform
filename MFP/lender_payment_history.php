@@ -148,32 +148,32 @@ $conn->close();
   </a><!-- End Notification Icon -->
 
   <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-          <li class="dropdown-header">
-          You have <?= count($notifications) ?> new notifications
-          <a href="./lender_notification.php"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
-          </li>
-          <li><hr class="dropdown-divider"></li>
-            
-          <?php if (!empty($notifications)): ?>
-          <?php foreach ($notifications as $notification): ?>
-              <li class="notification-item">
-                  <i class="bi bi-info-circle text-primary"></i>
-                  <div>
-                      <h4><?= htmlspecialchars($notification['type']) ?></h4>
-                      <p><?= date('F j, Y, g:i a', strtotime($notification['created_at'])) ?></p>
-                  </div>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-          <?php endforeach; ?>
-          <?php else: ?>
-          <li class="notification-item text-center">
-              <p>No new notifications</p>
-          </li>
-          <?php endif; ?>
-          
-          <li class="dropdown-footer">
-          <a href="./lender_notification.php">Show all notifications</a>
-          </li>
+<li class="dropdown-header">
+You have <?= count($notifications) ?> new notifications
+<a href="./lender_notification.php"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
+</li>
+<li><hr class="dropdown-divider"></li>
+
+<?php if (!empty($notifications)): ?>
+<?php foreach ($notifications as $notification): ?>
+    <li class="notification-item">
+        <i class="bi bi-info-circle text-primary"></i>
+        <div>
+            <h4><?= htmlspecialchars($notification['type']) ?></h4>
+            <p><?= date('F j, Y, g:i a', strtotime($notification['created_at'])) ?></p>
+        </div>
+    </li>
+    <li><hr class="dropdown-divider"></li>
+<?php endforeach; ?>
+<?php else: ?>
+<li class="notification-item text-center">
+    <p>No new notifications</p>
+</li>
+<?php endif; ?>
+
+<li class="dropdown-footer">
+<a href="./lender_notification.php">Show all notifications</a>
+</li>
     </ul>
 
         </li><!-- End Notification Nav -->

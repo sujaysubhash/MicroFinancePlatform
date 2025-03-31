@@ -27,8 +27,14 @@ if ($conn->connect_error) {
 
 // Fetch loan details from loan_application table
 $loans = [];
-$sql = "SELECT loanid, lender_id, lender_name, interest_rate, requested_loan_amount, status FROM loan_application";
-$result = $conn->query($sql);
+$sql = "SELECT loanid, lender_id, lender_name, interest_rate, requested_loan_amount, status, borrower_id 
+        FROM loan_application 
+        WHERE borrower_id = ?";  // Filter loans by borrower ID
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id); // Bind the logged-in borrower ID
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
@@ -68,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['loanid'])) {
         echo "<script>alert('Loan application not found.');</script>";
     }
 }
+
 
 $conn->close();
 ?>
@@ -490,7 +497,7 @@ $conn->close();
                                 <span class="badge <?php echo $statusClass; ?>"><?php echo ucfirst($loan['status']); ?></span>
                             </td>
                             <td>
-                                <?php if ($loan['status'] === 'approved'): ?>
+                                <?php if ($loan['status'] === 'approved' && $loan['borrower_id'] === $user_id): ?>
                                   <form method="POST" class="d-inline request-form">
                                       <input type="hidden" name="loanid" value="<?php echo $loan['loanid']; ?>">
                                       <button type="submit" class="btn btn-primary btn-sm request-btn">

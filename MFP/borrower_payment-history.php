@@ -25,11 +25,15 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch borrower's loan repayment details
+// Fetch borrower's loan repayment details with paid months count
 $sql = "SELECT la.loanid, la.lender_id, la.requested_loan_amount, la.interest_rate, 
-               la.status, la.loan_duration, b.funded_amount, b.wallet_balance
+               la.status, la.loan_duration, b.funded_amount, b.wallet_balance,
+               u.name AS lender_name, 
+               (SELECT COUNT(*) FROM payments p WHERE p.borrower_id = b.user_id 
+                AND p.status = 'Completed' AND p.lender_id = la.lender_id AND p.loan_id = la.loanid) AS paid_months
         FROM loan_application la
         JOIN borrower b ON la.borrower_id = b.user_id
+        JOIN users u ON la.lender_id = u.id
         WHERE b.user_id = ?";
 
 $stmt = $conn->prepare($sql);
@@ -448,6 +452,7 @@ $conn->close();
                 <div class="card-body d-flex justify-content-between">
                     <div>
                         <h5 class="card-title">Loan Summary</h5>
+                        <p><strong>Lender:</strong> <?php echo htmlspecialchars($loan['lender_name']); ?></p>
                         <p><strong>Loan Amount:</strong> ₹<?php echo number_format($loan['requested_loan_amount'], 2); ?></p>
                         <p><strong>Interest Rate:</strong> <?php echo $loan['interest_rate']; ?>%</p>
                         <p><strong>Total Repayable Amount:</strong> ₹<?php echo number_format($loan['total_repayable_amount'], 2); ?></p>
@@ -476,14 +481,14 @@ $conn->close();
                             <td>Month <?php echo $i; ?></td>
                             <td>₹<?php echo number_format($loan['monthly_installment'], 2); ?></td>
                             <td>
-                                <?php if ($i * $loan['monthly_installment'] <= $loan['funded_amount'] - $loan['wallet_balance']) : ?>
+                                <?php if ($i <= $loan['paid_months']) : ?>
                                     <span class="badge bg-success">Paid</span>
                                 <?php else : ?>
                                     <span class="badge bg-warning text-dark">Pending</span>
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <?php if ($i * $loan['monthly_installment'] > $loan['funded_amount'] - $loan['wallet_balance']) : ?>
+                                <?php if ($i > $loan['paid_months']) : ?>
                                     <form action="process_payment.php" method="POST">
                                         <input type="hidden" name="loan_id" value="<?php echo $loan['loanid']; ?>">
                                         <input type="hidden" name="amount" value="<?php echo $loan['monthly_installment']; ?>">
