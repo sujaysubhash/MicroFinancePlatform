@@ -1,17 +1,22 @@
 
 <?php
-session_start(); // Start session
+session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Check if the user is logged in
+// Ensure the user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php"); // Redirect to login page if not logged in
+    header("Location: login.php");
     exit();
 }
 
-// Fetch user's details from session
+// Secure session handling
+session_regenerate_id(true);
+
+// Fetch user details
 $user_id = $_SESSION['user_id'];
 $user_name = $_SESSION['user_name'] ?? 'Guest';
-$user_role = $_SESSION['user_role'] ?? 'User'; // Default role if not set
+$user_role = $_SESSION['user_role'] ?? 'User';
 $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
 
 // Database connection
@@ -26,40 +31,47 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch loan repayment details for borrowers funded by the lender
-$sql = "SELECT la.loanid, b.name AS borrower_name, b.funded_amount, la.requested_loan_amount, 
-               la.interest_rate, la.status, la.loan_duration, b.wallet_balance
+// Fetch loans related to lender
+$sql = "SELECT la.loanid, u.name AS borrower_name, b.funded_amount, 
+               la.requested_loan_amount, la.interest_rate, la.status, la.loan_duration, 
+               b.wallet_balance, 
+               (SELECT COUNT(*) FROM payments p 
+                WHERE p.borrower_id = la.borrower_id AND p.status = 'Completed' 
+                AND p.lender_id = la.lender_id AND p.loan_id = la.loanid) AS paid_months
         FROM loan_application la
         JOIN borrower b ON la.borrower_id = b.user_id
+        JOIN users u ON la.borrower_id = u.id
         WHERE la.lender_id = ?";
 
 $stmt = $conn->prepare($sql);
+if (!$stmt) {
+    die("Query Preparation Failed: " . $conn->error);
+}
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
 $loans = [];
 while ($row = $result->fetch_assoc()) {
-    // Calculate total amount including interest
-    $total_repayable_amount = $row['requested_loan_amount'] + ($row['requested_loan_amount'] * $row['interest_rate'] / 100);
+    $total_repayable_amount = $row['requested_loan_amount'] + 
+                              ($row['requested_loan_amount'] * $row['interest_rate'] / 100);
     $row['monthly_installment'] = $total_repayable_amount / $row['loan_duration'];
     $row['total_repayable_amount'] = $total_repayable_amount;
     $loans[] = $row;
 }
+$stmt->close();
 
-
-// Assign lender_id from session user_id
-$lender_id = $user_id; // Ensure lender_id is correctly assigned
-
-// Fetch notifications for the logged-in lender
+// Fetch notifications
 $notifications = [];
 $query = "SELECT n.type, n.created_at FROM notifications n 
           JOIN loan_application l ON n.loan_id = l.loanid 
-          WHERE l.lender_id = ? 
-          ORDER BY n.created_at DESC";
+          WHERE l.lender_id = ? ORDER BY n.created_at DESC";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("i", $lender_id);
+if (!$stmt) {
+    die("Notification Query Failed: " . $conn->error);
+}
+$stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -67,7 +79,6 @@ while ($row = $result->fetch_assoc()) {
     $notifications[] = $row;
 }
 $stmt->close();
-
 $conn->close();
 ?>
 
@@ -425,8 +436,9 @@ You have <?= count($notifications) ?> new notifications
 
   </aside><!-- End Sidebar-->
 
-  <main id="main" class="main">
-  <h2 class="text-center">Borrower Repayment History</h2>
+ 
+<main id="main" class="main">
+<h2 class="text-center">Borrower Repayment History</h2>
   
   <?php if (!empty($loans)) : ?>
       <?php foreach ($loans as $loan) : ?>
@@ -441,13 +453,17 @@ You have <?= count($notifications) ?> new notifications
                   <p><strong>Remaining Balance:</strong> ₹<?php echo number_format($loan['wallet_balance'], 2); ?></p>
                   
                   <?php 
-                  $paid_installments = round(($loan['funded_amount'] - $loan['wallet_balance']) / $loan['monthly_installment']);
-                  $remaining_installments = $loan['loan_duration'] - $paid_installments;
-                  $progress = ($paid_installments / $loan['loan_duration']) * 100;
+                  $paid_installments = isset($loan['funded_amount'], $loan['wallet_balance'], $loan['monthly_installment']) && $loan['monthly_installment'] > 0
+                      ? round(($loan['funded_amount'] - $loan['wallet_balance']) / $loan['monthly_installment'])
+                      : 0;
+                  
+                  $remaining_installments = max(0, $loan['loan_duration'] - $paid_installments);
+                  $progress = ($loan['loan_duration'] > 0) ? ($paid_installments / $loan['loan_duration']) * 100 : 0;
+                  $progress = max(0, min(100, $progress)); // Ensure the progress is between 0-100%
                   ?>
                   
                   <div class="progress">
-                      <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $progress; ?>%" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuemax="100"><?php echo round($progress); ?>% Paid</div>
+                      <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $progress; ?>%" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuemax="100"> <?php echo round($progress); ?>% Paid</div>
                   </div>
               </div>
           </div>
@@ -466,7 +482,7 @@ You have <?= count($notifications) ?> new notifications
                           <td>Month <?php echo $i; ?></td>
                           <td>₹<?php echo number_format($loan['monthly_installment'], 2); ?></td>
                           <td>
-                              <?php if ($i <= $paid_installments) : ?>
+                              <?php if ($i <= $loan['paid_months']) : ?>
                                   <span class="badge bg-success">Paid</span>
                               <?php else : ?>
                                   <span class="badge bg-warning text-dark">Pending</span>
@@ -480,7 +496,6 @@ You have <?= count($notifications) ?> new notifications
   <?php else : ?>
       <p class="text-center mt-4">No repayment history available.</p>
   <?php endif; ?>
-    
 </main>
 
   <!-- ======= Footer ======= -->
