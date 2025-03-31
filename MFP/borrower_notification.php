@@ -7,19 +7,17 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Fetch user details
+// Fetch user's details from session
 $user_id = $_SESSION['user_id'];
 $user_name = $_SESSION['user_name'] ?? 'Guest';
+$user_role = $_SESSION['user_role'] ?? 'User'; // Default role if not set
 $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
-$user_role = $_SESSION['user_role'] ?? 'User';
 
-// Database configuration
+// Database connection
 $host = "localhost";
 $dbname = "mfp_database";
 $username = "root";
 $password = "";
-
-// Create connection
 $conn = new mysqli($host, $username, $password, $dbname);
 
 // Check connection
@@ -27,74 +25,28 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch lenders
-$sql = "SELECT id, name, interest_rate, available_funds, experience, rating FROM lenders";
+// Fetch loan count from borrower table
+$loan_count = 0;
+$sql = "SELECT COUNT(*) AS total_loans FROM borrower WHERE user_id = ?";  
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$stmt->bind_result($loan_count);
+$stmt->fetch();
+$stmt->close();
+
+
+// Fetch total funded amount and count of lender responses
+$funded_amount = 0;
+$lender_responded_count = 0;
+$sql = "SELECT SUM(funded_amount) AS total_funded, COUNT(lender_responded) AS total_lenders FROM borrower";
 $result = $conn->query($sql);
 
-// Handle loan application form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apply_loan'])) {
-    $lender_id = $_POST['lender_id'];
-    $employment_status = $_POST['employment_status'];
-    $income = $_POST['income'];
-    $credit_score = $_POST['credit_score'] ?? rand(300, 900); // Generate if not provided
-    $loan_amount = $_POST['loan_amount']; // Fetch requested loan amount
-
-    // Ensure borrower exists in the borrower table
-    $check_borrower = $conn->query("SELECT user_id FROM borrower WHERE user_id = '$user_id'");
-    if ($check_borrower->num_rows == 0) {
-        $insert_borrower = "INSERT INTO borrower (user_id, name, email, employment_status, income, credit_score, loan_status, funded_amount, loan_applied_count, wallet_balance) 
-                            VALUES ('$user_id', '$user_name', '$user_email', '$employment_status', '$income', '$credit_score', 'pending', 0, 1, 0)";
-        if (!$conn->query($insert_borrower)) {
-            die("Error inserting borrower: " . $conn->error);
-        }
-    } else {
-        // If borrower exists, update details
-        $update_borrower = "UPDATE borrower SET employment_status='$employment_status', income='$income', 
-                            credit_score='$credit_score', loan_status='pending', loan_applied_count = loan_applied_count + 1 
-                            WHERE user_id='$user_id'";
-        if (!$conn->query($update_borrower)) {
-            die("Error updating borrower: " . $conn->error);
-        }
-    }
-
-    // Fetch lender details
-    $lender_query = $conn->query("SELECT name, interest_rate, available_funds FROM lenders WHERE id = '$lender_id'");
-    if ($lender_query->num_rows > 0) {
-        $lender = $lender_query->fetch_assoc();
-        $lender_name = $lender['name'];
-        $interest_rate = $lender['interest_rate'];
-        $available_funds = $lender['available_funds'];
-
-        // Ensure the loan amount is within the available funds
-        if ($loan_amount > $available_funds) {
-            echo "<script>alert('Loan amount exceeds available funds! Please enter a valid amount.'); window.location.href='apply-loan.php';</script>";
-            exit();
-        }
-
-        // Insert into loan_application table (including requested_loan_amount)
-        $loan_duration = $_POST['loan_duration']; // Fetch loan duration
-
-        // Insert into loan_application table (including loan_duration)
-        $insert_loan = "INSERT INTO loan_application (borrower_id, lender_id, borrower, lender_name, interest_rate, requested_loan_amount, loan_duration, status) 
-                VALUES ('$user_id', '$lender_id', '$user_name', '$lender_name', '$interest_rate', '$loan_amount', '$loan_duration', 'pending')";
-        
-        if (!$conn->query($insert_loan)) {
-            die("Error inserting loan: " . $conn->error);
-        }
-        
-        $loan_id = $conn->insert_id;
-
-        // Update borrower table with loan details
-        $update_borrower = "UPDATE borrower SET loan_id='$loan_id' WHERE user_id='$user_id'";
-        if (!$conn->query($update_borrower)) {
-            die("Error updating borrower: " . $conn->error);
-        }
-
-        echo "<script>alert('Loan application submitted successfully!'); window.location.href='lenders.php';</script>";
-    } else {
-        echo "<script>alert('Invalid lender selected. Please try again.'); window.location.href='apply-loan.php';</script>";
-    }
+if ($result && $row = $result->fetch_assoc()) {
+    $funded_amount = $row['total_funded'] ?? 0;
+    $lender_responded_count = $row['total_lenders'] ?? 0;
 }
+
 
 $borrower_id = $user_id;
 // Fetch notifications for the logged-in borrower
@@ -113,9 +65,13 @@ while ($row = $result1->fetch_assoc()) {
 }
 $stmt->close();
 
+// Fetch notifications only for the logged-in user
+$sql = "SELECT id, message, type, created_at FROM notifications WHERE user_id = ? ORDER BY created_at DESC";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -124,7 +80,7 @@ $stmt->close();
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Lenders</title>
+  <title>Notification</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
@@ -145,14 +101,13 @@ $stmt->close();
   <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
   <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
 
-  <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
-
 </head>
 
 <body>
-<!-- ======= Header ======= -->
-<header id="header" class="header fixed-top d-flex align-items-center">
+
+ <!-- ======= Header ======= -->
+ <header id="header" class="header fixed-top d-flex align-items-center">
 
 <div class="d-flex align-items-center justify-content-between">
   <a href="index.html" class="logo d-flex align-items-center">
@@ -352,13 +307,13 @@ You have <?= count($notifications) ?> new notifications
 <ul class="sidebar-nav" id="sidebar-nav">
 
   <li class="nav-item">
-    <a class="nav-link collapsed" href="./index.php">
+    <a class="nav-link collapsed " href="./index.php">
       <i class="bi bi-grid"></i>
       <span>Dashboard</span>
     </a>
   </li><!-- End Dashboard Nav -->
   <li class="nav-item">
-    <a class="nav-link collapsed" href="./notifications.php">
+    <a class="nav-link active" href="./notifications.php">
       <i class="bi bi-person"></i>
       <span>Notification</span>
     </a>
@@ -372,14 +327,14 @@ You have <?= count($notifications) ?> new notifications
   </li><!-- End Profile Page Nav -->
 
   <li class="nav-item">
-    <a class="nav-link active" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+    <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
       <i class="bi bi-menu-button-wide"></i><span>Loans</span><i class="bi bi-chevron-down ms-auto"></i>
     </a>
-    <ul id="components-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
+    <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
       <li>
 
 
-        <a href="./apply-loan.php" class="active">
+        <a href="./apply-loan.php">
           <i class="bi bi-circle"></i><span>Apply for loan</span>
         </a>
       </li>
@@ -408,8 +363,8 @@ You have <?= count($notifications) ?> new notifications
         </a>
       </li>
       <li>
-        <a href="./payment-history.php">
-          <i class="bi bi-circle"></i><span>Payment History</span>
+      <a href="./borrower_payment-history.php">
+      <i class="bi bi-circle"></i><span>Payment History</span>
         </a>
       </li>
       
@@ -466,109 +421,48 @@ You have <?= count($notifications) ?> new notifications
 
 </aside><!-- End Sidebar-->
 
-  <!-- ======= Main Content ======= -->
- <!-- ======= Main Content ======= -->
- <main id="main" class="main">
-  <div class="pagetitle">
-    <h1>Lenders</h1>
-    <nav>
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-        <li class="breadcrumb-item active">Lenders</li>
-      </ol>
-    </nav>
-  </div>
-  <section class="section">
-    <div class="row">
-      <?php
-      if ($result->num_rows > 0) {
-          while ($row = $result->fetch_assoc()) {
-              ?>
-              <div class="col-lg-4 col-md-6">
-                <div class="card shadow-sm border-0 rounded">
-                  <div class="card-body">
-                    <h5 class="card-title text-primary"><?php echo htmlspecialchars($row['name']); ?></h5>
-                    <p class="card-text">
-                      <strong>Interest Rate:</strong> <?php echo htmlspecialchars($row['interest_rate']); ?>%<br>
-                      <strong>Loan Amount:</strong> ₹<?php echo number_format($row['available_funds']); ?><br>
-                      <strong>Experience:</strong> <?php echo htmlspecialchars($row['experience']); ?> years<br>
-                      <strong>Rating:</strong> 
-                      <?php for ($i = 0; $i < $row['rating']; $i++) { echo "⭐"; } ?>
-                    </p>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyLoanModal<?php echo $row['id']; ?>">
-                        Apply Loan
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div class="modal fade" id="applyLoanModal<?php echo $row['id']; ?>" tabindex="-1" aria-labelledby="applyLoanModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="applyLoanModalLabel">Apply for Loan with <?php echo htmlspecialchars($row['name']); ?></h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <main id="main" class="main">
+    <div class="container py-4">
+        <h3 class="mb-4 text-center">Your Notifications</h3>
+
+        <?php
+        if ($result->num_rows > 0) {
+            // Loop through each notification and display it
+            while ($row = $result->fetch_assoc()) {
+                ?>
+                <div class="card notification-card">
+                    <div class="card-body">
+                        <h5 class="card-title"><?php echo htmlspecialchars($row['type']); ?></h5>
+                        <p><?= htmlspecialchars($row['message']) ?></p>
+                        <p class="notification-time"><?php echo date("F j, Y | h:i A", strtotime($row['created_at'])); ?></p>
                     </div>
-                    <div class="modal-body">
-                      <form method="post">
-                        <input type="hidden" name="lender_id" value="<?php echo $row['id']; ?>">
-                        
-                        <div class="mb-3">
-                          <label for="employment_status" class="form-label">Employment Status</label>
-                          <select class="form-select" name="employment_status" required>
-                            <option value="employed">Employed</option>
-                            <option value="self-employed">Self-Employed</option>
-                            <option value="unemployed">Unemployed</option>
-                          </select>
-                        </div>
-
-                        <div class="mb-3">
-                          <label for="income" class="form-label">Monthly Income (₹)</label>
-                          <input type="number" class="form-control" name="income" required min="0">
-                        </div>
-
-                        <div class="mb-3">
-                          <label for="credit_score" class="form-label">CIBIL Score</label>
-                          <input type="number" class="form-control" name="credit_score" required min="300" max="900">
-                        </div>
-
-                        <div class="mb-3">
-                          <label for="available_funds" class="form-label">Available Funds</label>
-                          <input type="text" class="form-control" id="available_funds_<?php echo $row['id']; ?>" value="<?php echo $row['available_funds']; ?>" readonly>
-                        </div>
-
-                        <div class="mb-3">
-                          <label for="loan_amount" class="form-label">Loan Amount</label>
-                          <input type="number" class="form-control" name="loan_amount" id="loan_amount_<?php echo $row['id']; ?>" 
-                          min="1" max="<?php echo $row['available_funds']; ?>" required>
-                        </div>
-                        <div class="mb-3">
-                          <label for="loan_duration" class="form-label">Loan Duration (Months)</label>
-                          <input type="number" class="form-control" name="loan_duration" id="loan_duration_<?php echo $row['id']; ?>" 
-                          min="1" max="60" required> <!-- Limit duration between 1 and 60 months -->
-                        </div>
-
-                        <button type="submit" name="apply_loan" class="btn btn-success">Submit Loan Application</button>
-                      </form>
-                    </div>
-                  </div>
                 </div>
-              </div>
-              <?php
-          }
-      } else {
-          echo "<p>No lenders found.</p>";
-      }
-      $conn->close();
-      ?>
+                <?php
+            }
+        } else {
+            echo "<p class='text-center'>No notifications found.</p>";
+        }
+        ?>
+
     </div>
-  </section>
 </main><!-- End #main -->
 
+<?php
+// Close database connection
+$stmt->close();
+$conn->close();
+?>
 
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
     <div class="copyright">
-      &copy; Copyright <strong><span>Micro Finance Platform</span></strong>. All Rights Reserved
+      &copy; Copyright <strong><span>NiceAdmin</span></strong>. All Rights Reserved
+    </div>
+    <div class="credits">
+      <!-- All the links in the footer should remain intact. -->
+      <!-- You can delete the links only if you purchased the pro version. -->
+      <!-- Licensing information: https://bootstrapmade.com/license/ -->
+      Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
     </div>
   </footer><!-- End Footer -->
 
