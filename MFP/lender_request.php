@@ -26,9 +26,12 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+
 // Fetch only lenders from users table
 $sql = "SELECT id, name, email FROM users WHERE role = 'Lender'";
 $result = $conn->query($sql);
+
+
 ?>
 
 <!DOCTYPE html>
