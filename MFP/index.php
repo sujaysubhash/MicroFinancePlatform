@@ -370,7 +370,7 @@ $conn->close();
           </li>
 
           <a href="./repayment.php">
-              <i class="bi bi-circle"></i><span>Repayments</span>
+              <i class="bi bi-circle"></i><span>Add Money</span>
             </a>
           </li>
           
@@ -384,7 +384,7 @@ $conn->close();
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
             <a href="./repayment.php">
-              <i class="bi bi-circle"></i><span>Repayments</span>
+              <i class="bi bi-circle"></i><span>Add Money</span>
             </a>
           </li>
           <li>
@@ -506,36 +506,6 @@ $conn->close();
     </div>
 </div>
 
-
-    <!-- News & Updates Centered at Bottom -->
-    <!-- <section class="section dashboard mt-5">
-        <div class="container">
-            <div class="row mt-4 justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card shadow p-4 border-0 rounded-4 bg-light">
-                        <div class="card-body text-center">
-                            <h4 class="text-primary">News &amp; Updates</h4>
-                            <div class="news">
-                                <?php
-                                if ($result->num_rows > 0) {
-                                    while ($row = $result->fetch_assoc()) {
-                                        echo '<div class="post-item clearfix border-bottom pb-2 mb-2 d-flex flex-column align-items-center">
-                                                <img src="' . $row["image_url"] . '" class="img-fluid rounded mb-2" alt="">
-                                                <h5><a href="#" class="text-dark fw-bold">' . $row["title"] . '</a></h5>
-                                                <p class="text-muted text-center">' . substr($row["content"], 0, 100) . '...</p>
-                                              </div>';
-                                    }
-                                } else {
-                                    echo '<p class="text-muted">No news available.</p>';
-                                }
-                                ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>  -->
 
 </main><!-- End #main -->
 

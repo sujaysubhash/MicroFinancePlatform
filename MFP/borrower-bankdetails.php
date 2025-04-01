@@ -364,9 +364,6 @@ $conn->close();
             </a>
           </li>
 
-          <a href="./repayment.php">
-              <i class="bi bi-circle"></i><span>Repayments</span>
-            </a>
           </li>
           
         </ul>
@@ -379,7 +376,7 @@ $conn->close();
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
             <a href="./repayments.php">
-              <i class="bi bi-circle"></i><span>Repayments</span>
+              <i class="bi bi-circle"></i><span>Add Money</span>
             </a>
           </li>
           <li>
@@ -462,7 +459,7 @@ $conn->close();
                     </tr>
                     <tr>
                         <th>Account Holder Name</th>
-                        <td id="accountHolder">John Doe</td>
+                        <td id="accountHolder"><?php echo htmlspecialchars($user_name) ?></td>
                     </tr>
                     <tr>
                         <th>Branch Name</th>

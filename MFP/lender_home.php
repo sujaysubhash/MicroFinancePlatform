@@ -662,6 +662,47 @@ $result = $conn->query($sql);
 
         </div><!-- End Right side columns -->
 
+      <section class="section about">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-lg p-2 border-0 rounded-4">
+                    <div class="card-body text-center">
+                        <h2 class="card-title text-primary">Who We Are</h2>
+                        <p class="lead text-muted mb-2">
+                            The <strong>Micro Finance Platform</strong> connects borrowers directly with lenders, removing intermediaries to ensure transparent, secure, and fair lending practices.
+                            We aim to provide access to financial support for those who need it while offering investment opportunities for those who want to grow their wealth.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+    <div class="col-lg-6">
+        <div class="card shadow py-2 px-3 border-0 rounded-4 bg-light">
+            <div class="card-body">
+                <h3 class="card-title text-primary">Our Mission</h3>
+                <p class="text-muted mb-1">
+                    We connect borrowers and lenders directly, ensuring transparency and accessibility while providing financial support and investment opportunities.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow py-2 px-3 border-0 rounded-4 bg-white">
+            <div class="card-body">
+                <h3 class="card-title text-primary">How It Works</h3>
+                <ul class="list-unstyled text-muted mb-1">
+                    <li><strong>Borrowers:</strong> Get short-term loans at fair rates without banks.</li>
+                    <li><strong>Lenders:</strong> Invest directly and earn secured returns.</li>
+                    <li><strong>Admin:</strong> Ensures platform security and smooth operation.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
       </div>
     </section>
 

@@ -349,11 +349,6 @@ $result = $stmt->get_result();
           <i class="bi bi-circle"></i><span>My Loans</span>
         </a>
       </li>
-
-      <a href="./repayment.php">
-          <i class="bi bi-circle"></i><span>Repayments</span>
-        </a>
-      </li>
       
     </ul>
   </li><!-- End Components Nav -->
@@ -364,9 +359,9 @@ $result = $stmt->get_result();
     </a>
     <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
       <li>
-        <a href="./repayment.php">
-          <i class="bi bi-circle"></i><span>Repayments</span>
-        </a>
+      <a href="./repayment.php">
+        <i class="bi bi-circle"></i><span>Add Money</span>
+      </a>
       </li>
       <li>
       <a href="./borrower_payment-history.php">

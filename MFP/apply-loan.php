@@ -389,9 +389,6 @@ You have <?= count($notifications) ?> new notifications
         </a>
       </li>
 
-      <a href="./repayment.php">
-          <i class="bi bi-circle"></i><span>Repayments</span>
-        </a>
       </li>
       
     </ul>
@@ -404,7 +401,7 @@ You have <?= count($notifications) ?> new notifications
     <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
       <li>
         <a href="./repayment.php">
-          <i class="bi bi-circle"></i><span>Repayments</span>
+          <i class="bi bi-circle"></i><span>Add Money</span>
         </a>
       </li>
       <li>

@@ -333,11 +333,10 @@ You have <?= count($notifications) ?> new notifications
         <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-menu-button-wide"></i><span>Loans</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="components-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
-          <li>
+        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+      <li>
 
-
-            <a href="./apply-loan.php" >
+            <a href="./apply-loan.php">
               <i class="bi bi-circle"></i><span>Apply for loan</span>
             </a>
           </li>
@@ -347,23 +346,20 @@ You have <?= count($notifications) ?> new notifications
             </a>
           </li>
 
-          <a href="./repayment.php" class="active">
-              <i class="bi bi-circle"></i><span>Repayments</span>
-            </a>
           </li>
           
         </ul>
       </li><!-- End Components Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link active" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-journal-text"></i><span>Transactions</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="forms-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./repayment.php">
-              <i class="bi bi-circle"></i><span>Repayments</span>
-            </a>
+          <a href="./repayment.php" class = "active">
+            <i class="bi bi-circle"></i><span>Add Money</span>
+          </a>
           </li>
           <li>
           <a href="./borrower_payment-history.php">

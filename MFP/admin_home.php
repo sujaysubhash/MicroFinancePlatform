@@ -27,6 +27,13 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+
+
+
+// Fetch latest 5 news articles
+$sql = "SELECT * FROM news_updates ORDER BY created_at DESC LIMIT 5";
+$result = $conn->query($sql);
+
 // SQL query to fetch lender details
 $sql = "SELECT id, name, interest_rate, available_funds, experience, rating FROM lenders";
 $result = $conn->query($sql);

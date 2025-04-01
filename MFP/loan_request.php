@@ -478,6 +478,13 @@ $conn->close();
                                       </button>
                                 </form>
 
+                                <form method="POST" action="reject_loan.php" class="d-inline reject-form">
+                                <input type="hidden" name="loanid" value="<?php echo $row['loanid']; ?>">
+                                      <button type="submit" class="btn btn-primary btn-sm reject-btn">
+                                          Reject
+                                      </button>
+                                </form>
+
                             </div>
                         </div>
                     </div>
@@ -550,10 +557,37 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Extra Feature: Clear accepted loan states when logged out
-    if (!sessionStorage.getItem("userLoggedIn")) {
-        localStorage.clear(); // Clear all stored accepted loan states
-    }
+    document.querySelectorAll(".reject-form").forEach(form => {
+        let button = form.querySelector(".reject-btn");
+        let loanId = form.querySelector("input[name='loanid']").value;
+
+        // Check if this loan was already rejected
+        if (localStorage.getItem("rejected_" + loanId)) {
+            button.textContent = "Rejected";
+            button.classList.remove("btn-primary");
+            button.classList.add("btn-danger");
+            button.disabled = true;
+        }
+
+        form.addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent immediate form submission
+
+            button.textContent = "Rejected";
+            button.classList.remove("btn-primary");
+            button.classList.add("btn-danger");
+            button.disabled = true;
+
+            // Store the rejected state in localStorage
+            localStorage.setItem("rejected_" + loanId, true);
+
+            // Submit the form after a short delay
+            setTimeout(() => {
+                this.submit(); // Submit after updating UI
+            }, 500);
+        });
+    });
+
+
 });
 
 // Mark user as logged in (for session management)
