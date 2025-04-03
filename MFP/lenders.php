@@ -48,9 +48,22 @@ while ($row = $result1->fetch_assoc()) {
 }
 $stmt->close();
 
-// SQL query to fetch lender details
-$sql = "SELECT id, name, interest_rate, available_funds, experience, rating FROM lenders";
+// // SQL query to fetch lender details
+// $sql = "SELECT id, name, interest_rate, available_funds, experience, rating FROM lenders";
+// $result = $conn->query($sql);
+
+// SQL query to fetch lender details with correct highlight priority ordering
+$sql = "SELECT id, name, interest_rate, available_funds, experience, rating 
+        FROM lenders 
+        ORDER BY 
+            CASE 
+                WHEN highlight_priority IS NOT NULL THEN highlight_priority 
+                ELSE 9999  -- Push NULL values to the bottom
+            END ASC, 
+            id ASC"; 
+
 $result = $conn->query($sql);
+
 
 ?>
 

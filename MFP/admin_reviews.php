@@ -27,9 +27,33 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// SQL query to fetch lender details
-$sql = "SELECT id, name, interest_rate, available_funds, experience, rating FROM lenders";
-$result = $conn->query($sql);
+
+
+
+// Handle highlight request
+if (isset($_POST['highlight_lender'])) {
+  $lender_id = intval($_POST['lender_id']);
+  
+  // Shift priorities for existing highlights
+  mysqli_query($conn, "UPDATE lenders SET highlight_priority = highlight_priority + 1 WHERE highlight_priority IS NOT NULL");
+  
+  // Set the selected lender to highest priority
+  mysqli_query($conn, "UPDATE lenders SET highlight_priority = 1 WHERE id = $lender_id");
+
+   // Approve all pending reviews for the highlighted lender
+   mysqli_query($conn, "UPDATE borrower_reviews SET status = 'approved' WHERE lender_id = $lender_id AND status = 'pending'");
+}
+
+// Fetch lender reviews from the database
+$query = "SELECT br.id, br.review_text, br.rating, br.created_at, br.status, 
+               b.user_id AS borrower_id, b.name AS borrower_name, 
+               l.id AS lender_id, l.name AS lender_name, l.highlight_priority 
+        FROM borrower_reviews br
+        JOIN borrower b ON br.borrower_id = b.user_id
+        JOIN lenders l ON br.lender_id = l.id
+        ORDER BY l.highlight_priority ASC, br.created_at DESC";
+
+$result = mysqli_query($conn, $query);
 ?>
 
 <!DOCTYPE html>
@@ -166,7 +190,7 @@ $result = $conn->query($sql);
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link active" href="./admin_home.php">
+        <a class="nav-link collapsed" href="./admin_home.php">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
@@ -215,7 +239,7 @@ $result = $conn->query($sql);
 
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./admin_reviews.php">
+        <a class="nav-link active" href="./admin_reviews.php">
           <i class="bi bi-question-circle"></i>
           <span>Reviews</span>
         </a>
@@ -240,38 +264,50 @@ $result = $conn->query($sql);
   </aside><!-- End Sidebar-->
 
   <main id="main" class="main">
-        
-  <div class="container mt-4">
-        <h2 class="mb-4">Lender Reviews Management</h2>
-        <table class="table table-bordered table-striped">
-            <thead class="table-dark">
-                <tr>
-                    <th>Borrower Name</th>
-                    <th>Lender</th>
-                    <th>Review</th>
-                    <th>Rating</th>
-                    <th>Highlight</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Don Lee</td>
-                    <td>John Doe</td>
-                    <td>Excellent service and very supportive.</td>
-                    <td>4.8</td>
-                    <td><button class="btn btn-success btn-sm highlight-btn">Highlight</button></td>
-                </tr>
-                <tr>
-                    <td>Will Smith</td>
-                    <td>Jane Smith</td>
-                    <td>Quick and easy loan process.</td>
-                    <td>4.5</td>
-                    <td><button class="btn btn-success btn-sm highlight-btn">Highlight</button></td>
-                </tr>
-            </tbody>
-        </table>
+  <div class="container mt-5">
+        <h2 class="text-center mb-4">Lender Reviews</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Borrower Name</th>
+                        <th>Lender Name</th>
+                        <th>Review</th>
+                        <th>Rating</th>
+                        <th>Created At</th>
+                        <th>Status</th>
+                        <th>Highlight</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+                        <tr class="<?php echo ($row['highlight_priority'] !== NULL) ? 'table-warning' : ''; ?>">
+                            <td><?php echo htmlspecialchars($row['id']); ?></td>
+                            <td><?php echo htmlspecialchars($row['borrower_name']); ?></td>
+                            <td><?php echo htmlspecialchars($row['lender_name']); ?></td>
+                            <td><?php echo nl2br(htmlspecialchars($row['review_text'])); ?></td>
+                            <td><?php echo htmlspecialchars($row['rating']); ?></td>
+                            <td><?php echo htmlspecialchars($row['created_at']); ?></td>
+                            <td>
+                                <span class="badge bg-<?php echo ($row['status'] == 'approved') ? 'success' : (($row['status'] == 'pending') ? 'warning' : 'danger'); ?>">
+                                    <?php echo htmlspecialchars($row['status']); ?>
+                                </span>
+                            </td>
+                            <td>
+                            <form method="POST">
+                                    <input type="hidden" name="lender_id" value="<?php echo $row['lender_id']; ?>">
+                                    <button type="submit" name="highlight_lender" class="btn btn-sm <?php echo ($row['highlight_priority'] !== NULL) ? 'btn-warning' : 'btn-primary'; ?>" <?php echo ($row['highlight_priority'] !== NULL) ? 'disabled' : ''; ?>>
+                                        <?php echo ($row['highlight_priority'] !== NULL) ? 'Highlighted' : 'Highlight'; ?>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
     </div>
-  </section>
 </main><!-- End #main -->
 
   <!-- ======= Footer ======= -->

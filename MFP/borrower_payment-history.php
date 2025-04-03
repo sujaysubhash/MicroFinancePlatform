@@ -481,6 +481,35 @@ You have <?= count($notifications) ?> new notifications
                     <?php endfor; ?>
                 </tbody>
             </table>
+
+            <!-- Review Section -->
+              <!-- Review Form: Only displayed when all months are paid -->
+            <?php if ($loan['paid_months'] == $loan['loan_duration']) : ?>
+                <div class="card mt-4 p-3">
+                    <h5 class="text-center">Rate Your Experience</h5>
+                    <form action="submit_review.php" method="POST">
+                        <input type="hidden" name="loan_id" value="<?php echo $loan['loanid']; ?>">
+                        <input type="hidden" name="lender_id" value="<?php echo $loan['lender_id']; ?>">
+                        <div class="mb-3">
+                            <label for="rating" class="form-label"><strong>Rating:</strong></label>
+                            <select class="form-select" name="rating" id="rating" required>
+                                <option value="">Select Rating</option>
+                                <option value="5">⭐⭐⭐⭐⭐ (Excellent)</option>
+                                <option value="4">⭐⭐⭐⭐ (Good)</option>
+                                <option value="3">⭐⭐⭐ (Average)</option>
+                                <option value="2">⭐⭐ (Below Average)</option>
+                                <option value="1">⭐ (Poor)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="review" class="form-label"><strong>Write a Review:</strong></label>
+                            <textarea class="form-control" name="review" id="review" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success">Submit Review</button>
+                    </form>
+                </div>
+            <?php endif; ?>
+            <!-- End Review Section -->
         <?php endforeach; ?>
     <?php else : ?>
         <p class="text-center mt-4">No repayment history available.</p>

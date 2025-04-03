@@ -114,10 +114,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
                     // Insert into lenders table if role is 'Lender'
                     if (strtolower($role) === "lender") {
+                        
                         $lender_sql = "INSERT INTO lenders (id, name, interest_rate, available_funds, experience, rating) VALUES (?, ?, ?, ?, ?, ?)";
                         $lender_stmt = $conn->prepare($lender_sql);
                     
                         if ($lender_stmt) {
+                            $available_funds = floatval($available_funds);
+
                             $lender_stmt->bind_param("isdiii", $user_id, $name, $interest_rate, $available_funds, $experience, $rating);
                             if (!$lender_stmt->execute()) {
                                 $response_message = "Error inserting lender data: " . $lender_stmt->error;
@@ -227,8 +230,8 @@ $conn->close();
             
             <div class="mb-3">
                 <label for="availabe funds" class="form-label">Available Funds:</label>
-                <input class="form-control" placeholder="Available Funds" name="availabe funds" type="number" name="available_funds">
-            </div>
+                <input class="form-control" placeholder="Available Funds" name="available_funds" type="number">
+                </div>
 
             <div class="mb-3">
                 <label for="experience" class="form-label">Experience (Years):</label>
