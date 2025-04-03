@@ -132,6 +132,20 @@ $stmt->bind_param("iisss", $borrower_id, $loan_id, $notification_message, $notif
 $stmt->execute();
 $stmt->close();
 
+// **Generate Repayment Reminder Notification**
+$due_date = date('d', strtotime('+6 months')); 
+
+$repayment_message = "Loan Amount {$loan_amount} for the loan by {$lender_name} is due on {$due_date}th of the month.";
+$repayment_type = "Repayment Reminder";
+$repayment_status = "Unread";
+
+$insert_repayment_notification = "INSERT INTO notifications (user_id, loan_id, message, type, status) VALUES (?, ?, ?, ?, ?)";
+$stmt = $conn->prepare($insert_repayment_notification);
+$stmt->bind_param("iisss", $borrower_id, $loan_id, $repayment_message, $repayment_type, $repayment_status);
+$stmt->execute();
+$stmt->close();
+
+
 // Store the funded loan in the session
 if (!isset($_SESSION['funded_loans'])) {
     $_SESSION['funded_loans'] = [];

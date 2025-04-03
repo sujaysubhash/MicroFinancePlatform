@@ -1,3 +1,0 @@
-
-<!-- loan request inn Web -->
-

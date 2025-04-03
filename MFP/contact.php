@@ -448,7 +448,7 @@ You have <?= count($notifications) ?> new notifications
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
     <div class="copyright">
-      &copy; Copyright <strong><span>NiceAdmin</span></strong>. All Rights Reserved
+      &copy; Copyright <strong><span>Micro Finance Platform</span></strong>. All Rights Reserved
     </div>
   </footer><!-- End Footer -->
 
