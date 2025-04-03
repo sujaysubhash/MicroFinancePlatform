@@ -104,6 +104,33 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 
+
+// Check if a filter is applied
+$cibil_filter = isset($_POST['cibil_limit']) && $_POST['cibil_limit'] !== '' ? (float) $_POST['cibil_limit'] : null;
+
+// Base SQL query to fetch borrowers
+$sql = "SELECT b.name, b.email, b.employment_status, b.credit_score, MAX(la.loanid) AS loanid 
+        FROM borrower b
+        INNER JOIN loan_application la ON b.user_id = la.borrower_id
+        WHERE la.lender_id = ?
+        GROUP BY b.user_id, b.name, b.email, b.employment_status, b.credit_score";
+
+// Apply filter only if a CIBIL score limit is entered
+if ($cibil_filter !== null) {
+    $sql .= " HAVING b.credit_score >= ?";
+}
+
+// Prepare the statement
+$stmt = $conn->prepare($sql);
+if ($cibil_filter !== null) {
+    $stmt->bind_param("id", $lender_id, $cibil_filter);
+} else {
+    $stmt->bind_param("i", $lender_id);
+}
+$stmt->execute();
+$result = $stmt->get_result();
+
+
 $stmt->close();
 $conn->close();
 ?>
@@ -459,6 +486,15 @@ $conn->close();
 
   <div class="container mt-4">
         <h2 class="text-center mb-4">Loan Requested Borrowers</h2>
+
+          <!-- Filter Form -->
+          <form method="POST" class="mb-3 text-center">
+            <label for="cibil_limit"><strong>Enter Minimum CIBIL Score:</strong></label>
+            <input type="number" id="cibil_limit" name="cibil_limit" step="0.01" min="0" class="form-control d-inline-block w-auto mx-2" 
+                   value="<?php echo isset($cibil_filter) ? htmlspecialchars($cibil_filter) : ''; ?>">
+            <button type="submit" class="btn btn-success">Filter</button>
+          </form>
+        
         <div class="row" id="borrower-list">
             <?php if ($result->num_rows > 0): ?>
                 <?php while ($row = $result->fetch_assoc()): ?>

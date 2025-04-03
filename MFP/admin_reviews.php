@@ -66,8 +66,7 @@ $result = mysqli_query($conn, $query);
   <title>Dashboard -MFP</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
-
-  <!-- Favicons -->
+  <!-- Fevicon -->
   <link href="./assets/img/logo.png" rel="icon">
   <link href="./assets/img/logo.png" rel="apple-touch-icon">
 

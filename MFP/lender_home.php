@@ -375,11 +375,6 @@ $result = $conn->query($sql);
               <i class="bi bi-circle"></i><span>Amount Request</span>
             </a>
           </li>
-
-          <a href="">
-              <i class="bi bi-circle"></i><span>Investment History</span>
-            </a>
-          </li>
           
         </ul>
       </li><!-- End Components Nav -->
