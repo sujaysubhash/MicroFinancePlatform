@@ -8,9 +8,9 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Fetch user's details from session
-$lender_id = $_SESSION['user_id']; // Since lenders have 'id', use user_id directly
+$lender_id = $_SESSION['user_id']; 
 $user_name = $_SESSION['user_name'] ?? 'Guest';
-$user_role = $_SESSION['user_role'] ?? 'User'; // Default role if not set
+$user_role = $_SESSION['user_role'] ?? 'User';
 $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
 
 // Database connection
@@ -25,15 +25,17 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch loan count from borrower table
-$loan_count = 0;
-$sql = "SELECT COUNT(*) AS total_loans FROM borrower WHERE user_id = ?";  
-$stmt = $conn->prepare($sql);
+
+$query = "SELECT COUNT(*) AS loan_count FROM loan_application WHERE lender_id = ?";
+$stmt = $conn->prepare($query);
 $stmt->bind_param("i", $lender_id);
 $stmt->execute();
-$stmt->bind_result($loan_count);
-$stmt->fetch();
-$stmt->close();
+$result = $stmt->get_result();
+
+$loan_count = 0;
+if ($row = $result->fetch_assoc()) {
+    $loan_count = $row['loan_count'];
+}
 
 // Fetch total funded amount and count of lender responses
 $funded_amount = 0;
@@ -47,17 +49,6 @@ if ($result && $row = $result->fetch_assoc()) {
 }
 
 
-
-// Fetch wallet balance
-$wallet_balance = 0;
-$sql = "SELECT wallet_balance FROM borrower WHERE user_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $lender_id);
-$stmt->execute();
-$stmt->bind_result($wallet_balance);
-$stmt->fetch();
-$stmt->close();
-
 // Fetch lenders data
 $lenders = [];
 $sql = "SELECT name, interest_rate, available_funds, experience FROM lenders";
@@ -69,7 +60,7 @@ if ($result->num_rows > 0) {
     }
 }
 
-// Fetch latest 5 news articles
+//Fetch news
 $sql = "SELECT * FROM news_updates ORDER BY created_at DESC LIMIT 5";
 $result = $conn->query($sql);
 
@@ -82,6 +73,21 @@ $stmt->execute();
 $stmt->bind_result($lender_wallet_balance);
 $stmt->fetch();
 $stmt->close();
+
+//Lender responded
+$query1 = "SELECT COUNT(*) AS responded_count 
+          FROM loan_application 
+          WHERE lender_id = ? AND lender_responded = 'true'";
+
+$stmt = $conn->prepare($query1);
+$stmt->bind_param("i", $lender_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$responded_count = 0;
+if ($row = $result->fetch_assoc()) {
+    $responded_count = $row['responded_count'];
+}
 
 // Fetch notifications for the logged-in lender
 $notifications = [];
@@ -289,7 +295,7 @@ $result = $conn->query($sql);
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="./profile.php">
+              <a class="dropdown-item d-flex align-items-center" href="./lender_profile.php">
                 <i class="bi bi-person"></i>
                 <span>My Profile</span>
               </a>
@@ -299,7 +305,7 @@ $result = $conn->query($sql);
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="./profile.php">
+              <a class="dropdown-item d-flex align-items-center" href="./borrower-bankdetails.php">
                 <i class="bi bi-gear"></i>
                 <span>Account Settings</span>
               </a>
@@ -404,12 +410,12 @@ $result = $conn->query($sql);
         </a>
         <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="">
+            <a href="./lender_profile.php">
               <i class="bi bi-circle"></i><span>Personal Details</span>
             </a>
           </li>
           <li>
-            <a href="">
+            <a href="./lender_bank_details.php">
               <i class="bi bi-circle"></i><span>Bank Details</span>
             </a>
           </li>
@@ -485,14 +491,14 @@ $result = $conn->query($sql);
                 </div>
 
                 <div class="card-body">
-                  <h5 class="card-title">Loans <span>| Today</span></h5>
+                  <h5 class="card-title">Responded <span>| Today</span></h5>
 
                   <div class="d-flex align-items-center">
                     <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                       <i class="bi bi-cart"></i>
                     </div>
                     <div class="ps-3">
-                      <h6><?php echo $loan_count; ?></h6> <!-- Dynamic Loan Count -->
+                      <h6><?php echo htmlspecialchars($responded_count); ?></h6> <!-- Dynamic Loan Count -->
 
                     </div>
                   </div>
@@ -547,15 +553,14 @@ $result = $conn->query($sql);
                 </div>
 
                 <div class="card-body">
-                  <h5 class="card-title">Borrowers <span>| This Year</span></h5>
+                  <h5 class="card-title">Loans <span>| This Year</span></h5>
 
                   <div class="d-flex align-items-center">
                     <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                       <i class="bi bi-people"></i>
                     </div>
                     <div class="ps-3">
-                    <h6><?php echo $lender_responded_count; ?></h6>
-                    <span class="text-danger small pt-1 fw-bold">0</span> <span class="text-muted small pt-2 ps-1">Response</span>
+                    <h6><?php echo htmlspecialchars($loan_count) ?></h6>
 
                     </div>
                   </div>

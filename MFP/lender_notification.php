@@ -266,7 +266,7 @@ $conn->close();
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="./profile.php">
+              <a class="dropdown-item d-flex align-items-center" href="./lender_profile.php">
                 <i class="bi bi-person"></i>
                 <span>My Profile</span>
               </a>
@@ -276,7 +276,7 @@ $conn->close();
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="./profile.php">
+              <a class="dropdown-item d-flex align-items-center" href="./borrower-bankdetails.php">
                 <i class="bi bi-gear"></i>
                 <span>Account Settings</span>
               </a>
@@ -381,12 +381,12 @@ $conn->close();
         </a>
         <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="">
+            <a href="./lender_profile.php">
               <i class="bi bi-circle"></i><span>Personal Details</span>
             </a>
           </li>
           <li>
-            <a href="">
+            <a href="./borrower-bankdetails.php">
               <i class="bi bi-circle"></i><span>Bank Details</span>
             </a>
           </li>

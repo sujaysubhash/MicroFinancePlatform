@@ -439,7 +439,12 @@ You have <?= count($notifications) ?> new notifications
                         <p><strong>Interest Rate:</strong> <?php echo $loan['interest_rate']; ?>%</p>
                         <p><strong>Total Repayable Amount:</strong> ₹<?php echo number_format($loan['total_repayable_amount'], 2); ?></p>
                         <p><strong>Loan Duration:</strong> <?php echo $loan['loan_duration']; ?> Months</p>
-                        <p><strong>Funded Amount:</strong> ₹<?php echo number_format($loan['funded_amount'], 2); ?></p>
+                        <?php 
+                            // Calculate total amount paid
+                            $total_paid = $loan['paid_months'] * $loan['monthly_installment'];
+                        ?>
+                        <p><strong>Total Amount Paid:</strong> ₹<?php echo number_format($total_paid, 2); ?></p>
+                        
                     </div>
                     <div>
                         <h5 class="text-end">Wallet Balance</h5>

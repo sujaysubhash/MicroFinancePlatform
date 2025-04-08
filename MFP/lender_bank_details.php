@@ -8,9 +8,9 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Fetch user's details from session
-$user_id = $_SESSION['user_id'];
+$lender_id = $_SESSION['user_id']; 
 $user_name = $_SESSION['user_name'] ?? 'Guest';
-$user_role = $_SESSION['user_role'] ?? 'User'; // Default role if not set
+$user_role = $_SESSION['user_role'] ?? 'User';
 $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
 
 // Database connection
@@ -26,54 +26,42 @@ if ($conn->connect_error) {
 }
 
 
-
-// Corrected SQL Query to fetch pending loan details with borrower info
-$sql = "SELECT la.loanid AS loanid, 
-               b.user_id AS borrower_id, 
-               b.name AS borrower_name, 
-               la.requested_loan_amount AS loan_amount, 
-               la.interest_rate, 
-               la.status,
-               la.loan_duration AS duration
-        FROM loan_application la
-        JOIN borrower b ON la.borrower_id = b.user_id
-        WHERE la.status = 'approved' AND la.lender_id = ?";
-
-// Execute query
+// SQL query to fetch user email based on session user ID
+$sql = "SELECT email FROM users WHERE id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("i", $lender_id); // Bind user ID
 $stmt->execute();
 $result = $stmt->get_result();
 
-$requested_loans = [];
-while ($row = $result->fetch_assoc()) {
-    $requested_loans[] = $row;
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $_SESSION['user_email'] = $row['email']; // Store email in session
+} else {
+    $_SESSION['user_email'] = 'Not Found'; // Default if email is not found
 }
 
-$stmt->close();
+$user_email = $_SESSION['user_email'];
 
-// Assign lender_id from session user_id
-$lender_id = $user_id; // Ensure lender_id is correctly assigned
 
-// Fetch notifications for the logged-in lender
+// Fetch notifications for the logged-in borrower
 $notifications = [];
-$query = "SELECT n.type, n.created_at FROM notifications n 
+$query1 = "SELECT n.type, n.message, n.created_at FROM notifications n 
           JOIN loan_application l ON n.loan_id = l.loanid 
           WHERE l.lender_id = ? 
           ORDER BY n.created_at DESC";
 
-$stmt = $conn->prepare($query);
+$stmt = $conn->prepare($query1);
 $stmt->bind_param("i", $lender_id);
 $stmt->execute();
-$result = $stmt->get_result();
-
-while ($row = $result->fetch_assoc()) {
+$result1 = $stmt->get_result();
+while ($row = $result1->fetch_assoc()) {
     $notifications[] = $row;
 }
-$stmt->close();
 
+$stmt->close();
 $conn->close();
-?> 
+?>
+
 
 
 <!DOCTYPE html>
@@ -83,13 +71,14 @@ $conn->close();
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Lender Dashboard</title>
+  <title>Lender Profile</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
-  <!-- Favicons -->
+  <!-- Fevicon -->
   <link href="./assets/img/logo.png" rel="icon">
   <link href="./assets/img/logo.png" rel="apple-touch-icon">
+
 
   <!-- Google Fonts -->
   <link href="https://fonts.gstatic.com" rel="preconnect">
@@ -104,12 +93,13 @@ $conn->close();
   <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
   <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
 
+  <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
-
 </head>
 
 <body>
 
+  
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
 
@@ -129,7 +119,7 @@ $conn->close();
     </div><!-- End Search Bar -->
 
     <nav class="header-nav ms-auto">
-       <ul class="d-flex align-items-center">
+      <ul class="d-flex align-items-center">
 
                 <li class="nav-item d-block d-lg-none">
                   <a class="nav-link nav-icon search-bar-toggle " href="#">
@@ -169,7 +159,7 @@ $conn->close();
             <?php endif; ?>
             
             <li class="dropdown-footer">
-                <a href="#">Show all notifications</a>
+                <a href="./lender_notification.php">Show all notifications</a>
             </li>
     </ul>
 
@@ -268,7 +258,7 @@ $conn->close();
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="./lender_bank_details.php">
+              <a class="dropdown-item d-flex align-items-center" href="./borrower-bankdetails.php">
                 <i class="bi bi-gear"></i>
                 <span>Account Settings</span>
               </a>
@@ -328,10 +318,10 @@ $conn->close();
       </li><!-- End Profile Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link active" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-menu-button-wide"></i><span>Investment</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="components-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
+        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
 
 
@@ -340,11 +330,10 @@ $conn->close();
             </a>
           </li>
 
-          <a href="./lender_page_amount_request.php" class="active">
+          <a href="./lender_page_amount_request.php">
               <i class="bi bi-circle"></i><span>Amount Request</span>
             </a>
           </li>
-
           
         </ul>
       </li><!-- End Components Nav -->
@@ -369,17 +358,17 @@ $conn->close();
       </li><!-- End Forms Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link active" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-bar-chart"></i><span>Profile</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="charts-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="">
+            <a href="./lender_profile.php">
               <i class="bi bi-circle"></i><span>Personal Details</span>
             </a>
           </li>
           <li>
-            <a href="./lender_bank_details.php">
+            <a href="./lender_bank_details.php" class="active">
               <i class="bi bi-circle"></i><span>Bank Details</span>
             </a>
           </li>
@@ -419,66 +408,81 @@ $conn->close();
   </aside><!-- End Sidebar-->
 
   <main id="main" class="main">
-
-  
-  <?php if (isset($_SESSION['error_message'])): ?>
-        <script>
-            alert("<?php echo $_SESSION['error_message']; ?>");
-            <?php unset($_SESSION['error_message']); ?>
-        </script>
-    <?php endif; ?>
-    
-    <div class="card-body">
-        <h5 class="card-title">Requested Loans <span>| Pending Approval</span></h5>
-
-        <table class="table table-borderless datatable">
-            <thead>
-                <tr>
-                    <th scope="col">Loan ID</th>
-                    <th scope="col">Borrower ID</th>
-                    <th scope="col">Borrower Name</th>
-                    <th scope="col">Amount</th>
-                    <th scope="col">Interest Rate</th>
-                    <th scope="col">Duration</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (!empty($requested_loans)): ?>
-                    <?php foreach ($requested_loans as $loan): ?>
-                        <tr>
-                            <th scope="row">LN<?php echo $loan['loanid']; ?></th>
-                            <td><?php echo htmlspecialchars($loan['borrower_id']); ?></td>
-                            <td><?php echo htmlspecialchars($loan['borrower_name']); ?></td>
-                            <td>₹<?php echo number_format($loan['loan_amount'], 2); ?></td>
-                            <td><?php echo $loan['interest_rate']; ?>%</td>
-                            <td><?php echo isset($loan['duration']) ? $loan['duration'] . ' months' : 'N/A'; ?></td>
-                            <td><span class="badge bg-warning"><?php echo ucfirst($loan['status']); ?></span></td>
-                            <td>
-                                <form method="POST" action="fund_loan.php" class="fund-loan-form">
-                                    <input type="hidden" name="loanid" value="<?php echo $loan['loanid']; ?>">
-                                    <button type="submit" class="btn btn-success btn-sm fund-loan-btn">Fund Loan</button>
-                                </form>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
+  <div class="container mt-5">
+        <h2 class="text-center mb-4">Borrower Bank Details</h2>
+        <div class="card shadow p-4">
+            <h5 class="card-title">Your Bank Information</h5>
+            <table class="table table-striped mt-3">
+                <tbody>
                     <tr>
-                        <td colspan="8" class="text-center">No requested loans available.</td>
+                        <th>Bank Name</th>
+                        <td id="bankName">State Bank of India</td>
                     </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                    <tr>
+                        <th>Account Number</th>
+                        <td id="accountNumber">XXXX-XXXX-XXXX-1234</td>
+                    </tr>
+                    <tr>
+                        <th>IFSC Code</th>
+                        <td id="ifscCode">SBIN0001234</td>
+                    </tr>
+                    <tr>
+                        <th>Account Holder Name</th>
+                        <td id="accountHolder"><?php echo htmlspecialchars($user_name) ?></td>
+                    </tr>
+                    <tr>
+                        <th>Branch Name</th>
+                        <td id="branchName">Mumbai Main Branch</td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateBankModal">Update Bank Details</button>
+        </div>
     </div>
+    
+    <!-- Update Bank Details Modal -->
+    <div class="modal fade" id="updateBankModal" tabindex="-1" aria-labelledby="updateBankModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateBankModalLabel">Update Bank Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateBankForm">
+                        <div class="mb-3">
+                            <label class="form-label">Bank Name</label>
+                            <input type="text" class="form-control" id="newBankName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Account Number</label>
+                            <input type="text" class="form-control" id="newAccountNumber" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">IFSC Code</label>
+                            <input type="text" class="form-control" id="newIfscCode" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Account Holder Name</label>
+                            <input type="text" class="form-control" id="newAccountHolder" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Branch Name</label>
+                            <input type="text" class="form-control" id="newBranchName" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
 </main>
 
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
     <div class="copyright">
       &copy; Copyright <strong><span>Micro Finance Platform</span></strong>. All Rights Reserved
-    </div>
-    <div class="credits">
     </div>
   </footer><!-- End Footer -->
 
@@ -494,34 +498,21 @@ $conn->close();
   <script src="assets/vendor/tinymce/tinymce.min.js"></script>
   <script src="assets/vendor/php-email-form/validate.js"></script>
 
-  <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const fundedLoans = <?php echo json_encode($_SESSION['funded_loans'] ?? []); ?>;
-
-        document.querySelectorAll(".fund-loan-btn").forEach(button => {
-            const loanId = button.getAttribute("data-loanid");
-
-            if (fundedLoans.includes(loanId)) {
-                button.disabled = true;
-                button.textContent = "Funded";
-            }
-
-            button.addEventListener("click", function(event) {
-                event.preventDefault();
-                button.disabled = true;
-                button.textContent = "Funded";
-
-                setTimeout(() => {
-                    button.closest("form").submit();
-                }, 500);
-            });
+      <script>
+        document.getElementById("updateForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent actual form submission
+        
+            // Display the success message
+            document.getElementById("successMessage").style.display = "block";
+        
+            // Optionally, hide the message after a few seconds
+            setTimeout(function() {
+                document.getElementById("successMessage").style.display = "none";
+            }, 2000);
         });
-    });
-</script>
-
+    </script>
+      
 </body>
 
 </html>

@@ -287,7 +287,7 @@ You have <?= count($notifications) ?> new notifications
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="./profile.php">
+              <a class="dropdown-item d-flex align-items-center" href="./lender_profile.php">
                 <i class="bi bi-person"></i>
                 <span>My Profile</span>
               </a>
@@ -297,7 +297,7 @@ You have <?= count($notifications) ?> new notifications
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="./profile.php">
+              <a class="dropdown-item d-flex align-items-center" href="./lender_bank_details.php">
                 <i class="bi bi-gear"></i>
                 <span>Account Settings</span>
               </a>
@@ -402,12 +402,12 @@ You have <?= count($notifications) ?> new notifications
         </a>
         <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="">
+            <a href="./lender_profile.php">
               <i class="bi bi-circle"></i><span>Personal Details</span>
             </a>
           </li>
           <li>
-            <a href="">
+            <a href="./lender_bank_details.php">
               <i class="bi bi-circle"></i><span>Bank Details</span>
             </a>
           </li>
@@ -459,8 +459,13 @@ You have <?= count($notifications) ?> new notifications
                   <p><strong>Interest Rate:</strong> <?php echo $loan['interest_rate']; ?>%</p>
                   <p><strong>Total Repayable Amount:</strong> ₹<?php echo number_format($loan['total_repayable_amount'], 2); ?></p>
                   <p><strong>Loan Duration:</strong> <?php echo $loan['loan_duration']; ?> Months</p>
-                  <p><strong>Funded Amount:</strong> ₹<?php echo number_format($loan['funded_amount'], 2); ?></p>
-                  <p><strong>Remaining Balance:</strong> ₹<?php echo number_format($loan['wallet_balance'], 2); ?></p>
+
+                  <?php 
+                      // Calculate total amount paid
+                      $total_paid = $loan['paid_months'] * $loan['monthly_installment'];
+                  ?>
+                  <p><strong>Total Amount Paid:</strong> ₹<?php echo number_format($total_paid, 2); ?></p>
+                        
                   
                   <?php
                   $paid_months = isset($loan['paid_months']) ? (int)$loan['paid_months'] : 0;
