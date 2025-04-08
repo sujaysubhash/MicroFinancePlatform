@@ -341,7 +341,7 @@ $result = $stmt->get_result();
       <li>
 
 
-        <a href="./appy-loan.php">
+        <a href="./apply-loan.php">
           <i class="bi bi-circle"></i><span>Apply for loan</span>
         </a>
       </li>

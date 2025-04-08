@@ -406,7 +406,7 @@ You have <?= count($notifications) ?> new notifications
         </a>
       </li>
       <li>
-        <a href="./payment-history.php">
+        <a href="./borrower_payment-history.php">
           <i class="bi bi-circle"></i><span>Payment History</span>
         </a>
       </li>

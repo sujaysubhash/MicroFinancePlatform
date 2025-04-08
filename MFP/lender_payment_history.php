@@ -447,19 +447,21 @@ You have <?= count($notifications) ?> new notifications
                   <p><strong>Funded Amount:</strong> ₹<?php echo number_format($loan['funded_amount'], 2); ?></p>
                   <p><strong>Remaining Balance:</strong> ₹<?php echo number_format($loan['wallet_balance'], 2); ?></p>
                   
-                  <?php 
-                  $paid_installments = isset($loan['funded_amount'], $loan['wallet_balance'], $loan['monthly_installment']) && $loan['monthly_installment'] > 0
-                      ? round(($loan['funded_amount'] - $loan['wallet_balance']) / $loan['monthly_installment'])
-                      : 0;
-                  
-                  $remaining_installments = max(0, $loan['loan_duration'] - $paid_installments);
-                  $progress = ($loan['loan_duration'] > 0) ? ($paid_installments / $loan['loan_duration']) * 100 : 0;
-                  $progress = max(0, min(100, $progress)); // Ensure the progress is between 0-100%
+                  <?php
+                  $paid_months = isset($loan['paid_months']) ? (int)$loan['paid_months'] : 0;
+                  $loan_duration = isset($loan['loan_duration']) ? (int)$loan['loan_duration'] : 1;
+
+                  $progress = ($loan_duration > 0) ? ($paid_months / $loan_duration) * 100 : 0;
+                  $progress = max(0, min(100, $progress)); // Clamp between 0-100
                   ?>
+
                   
                   <div class="progress">
-                      <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $progress; ?>%" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuemax="100"> <?php echo round($progress); ?>% Paid</div>
+                      <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $progress; ?>%" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuemax="100">
+                          <?php echo round($progress); ?>% Paid
+                      </div>
                   </div>
+                        
               </div>
           </div>
           

@@ -157,28 +157,36 @@ $conn->close();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="./style.css">
           <style>
-            body {
-          margin: 0; /* Removes default margin */
-          padding: 0; /* Removes default padding */
-          height: 100vh; /* Sets height to 100% of the viewport */
-          background-image: url('./Assets/10814678.jpg'); /* Path to your image */
-          background-size: cover; /* Ensures the image covers the entire page */
-          background-position: center; /* Centers the image */
-          background-repeat: no-repeat; /* Prevents tiling of the image */
-          background-attachment: fixed; /* Keeps the image fixed during scrolling */
-          }
+            html, body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        background-image: url('./Assets/10814678.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        overflow-x: hidden;
+        padding-top: 50px; /* space from top */
+        padding-bottom: 50px; /* space from bottom */
+    }
 
-      .login-container {
-          width: 400px;
-          padding: 20px;
-          background: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
-          border-radius: 10px;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          }
+    .login-container {
+        width: 400px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 420px) {
+        .login-container {
+            width: 90%;
+        }
+    }
     </style>
 </head>
 <body>
@@ -186,10 +194,13 @@ $conn->close();
     <h2 class="text-center">Login and Registration</h2>
 
     <?php if (!empty($response_message)): ?>
+        <script>
+            alert("<?= htmlspecialchars($response_message, ENT_QUOTES) ?>");
+        </script>
         <div class="alert alert-info"> <?= htmlspecialchars($response_message) ?> </div>
     <?php endif; ?>
 
-    <form id="auth-form" method="POST" action="login.php">
+    <form id="auth-form" method="POST" action="login.php"  enctype="multipart/form-data">
         <input type="hidden" name="action" id="action" value="login">
 
         <div id="role-selection" class="mb-3" style="display: none;">
