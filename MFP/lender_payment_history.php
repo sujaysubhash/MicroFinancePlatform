@@ -31,17 +31,32 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// $sql = "SELECT la.loanid, u.name AS borrower_name, b.funded_amount, 
+//                la.requested_loan_amount, la.interest_rate, la.status, la.loan_duration, 
+//                b.wallet_balance, 
+//                (SELECT COUNT(*) FROM payments p 
+//                 WHERE p.borrower_id = la.borrower_id AND p.status = 'Completed' 
+//                 AND p.lender_id = la.lender_id AND p.loan_id = la.loanid) AS paid_months
+//         FROM loan_application la
+//         JOIN borrower b ON la.borrower_id = b.user_id
+//         JOIN users u ON la.borrower_id = u.id
+//         WHERE la.lender_id = ?";
+
 // Fetch loans related to lender
 $sql = "SELECT la.loanid, u.name AS borrower_name, b.funded_amount, 
                la.requested_loan_amount, la.interest_rate, la.status, la.loan_duration, 
                b.wallet_balance, 
                (SELECT COUNT(*) FROM payments p 
-                WHERE p.borrower_id = la.borrower_id AND p.status = 'Completed' 
-                AND p.lender_id = la.lender_id AND p.loan_id = la.loanid) AS paid_months
+                WHERE p.borrower_id = la.borrower_id 
+                  AND p.status = 'Completed' 
+                  AND p.lender_id = la.lender_id 
+                  AND p.loan_id = la.loanid) AS paid_months
         FROM loan_application la
         JOIN borrower b ON la.borrower_id = b.user_id
         JOIN users u ON la.borrower_id = u.id
-        WHERE la.lender_id = ?";
+        WHERE la.lender_id = ?
+          AND la.lender_responded = 'true'";
+
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {

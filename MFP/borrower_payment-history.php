@@ -43,16 +43,6 @@ while ($row = $result1->fetch_assoc()) {
 }
 
 
-// // Fetch borrower's loan repayment details with paid months count
-// $sql = "SELECT la.loanid, la.lender_id, la.requested_loan_amount, la.interest_rate, 
-//                la.status, la.loan_duration, b.funded_amount, b.wallet_balance,
-//                u.name AS lender_name, 
-//                (SELECT COUNT(*) FROM payments p WHERE p.borrower_id = b.user_id 
-//                 AND p.status = 'Completed' AND p.lender_id = la.lender_id AND p.loan_id = la.loanid) AS paid_months
-//         FROM loan_application la
-//         JOIN borrower b ON la.borrower_id = b.user_id
-//         JOIN users u ON la.lender_id = u.id
-//         WHERE b.user_id = ?";
 
 $sql = "SELECT la.loanid, la.lender_id, la.requested_loan_amount, la.interest_rate, 
                la.status, la.loan_duration, b.funded_amount, b.wallet_balance,
