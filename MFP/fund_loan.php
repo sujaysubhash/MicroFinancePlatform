@@ -101,6 +101,14 @@ $stmt->bind_param("i", $loan_id);
 $stmt->execute();
 $stmt->close();
 
+//Lender responded updating to true.
+$update_response = "UPDATE loan_application SET lender_responded = 'true' WHERE loanid = ?";
+$stmt = $conn->prepare($update_response);
+$stmt->bind_param("i", $loan_id);
+$stmt->execute();
+$stmt->close();
+
+
 // Fetch borrower name
 $borrower_query = "SELECT name FROM users WHERE id = ?";
 $stmt = $conn->prepare($borrower_query);

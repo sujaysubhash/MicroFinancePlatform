@@ -29,28 +29,28 @@ if ($conn->connect_error) {
 
 // Corrected SQL Query to fetch pending loan details with borrower info
 $sql = "SELECT la.loanid AS loanid, 
-                b.user_id AS borrower_id, 
-                b.name AS borrower_name, 
-                la.requested_loan_amount AS loan_amount, 
-                la.interest_rate, 
-                la.status,
-                la.loan_duration AS duration
+               b.user_id AS borrower_id, 
+               b.name AS borrower_name, 
+               la.requested_loan_amount AS loan_amount, 
+               la.interest_rate, 
+               la.status,
+               la.loan_duration AS duration
         FROM loan_application la
         JOIN borrower b ON la.borrower_id = b.user_id
-        WHERE la.status = 'approved'";  // Only fetching loans that are pending
+        WHERE la.status = 'approved' AND la.lender_id = ?";
 
 // Execute query
-$result = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
-if (!$result) {
-    die("Query failed: " . $conn->error);
-}
-
-// Store fetched data in an array
 $requested_loans = [];
 while ($row = $result->fetch_assoc()) {
     $requested_loans[] = $row;
 }
+
+$stmt->close();
 
 // Assign lender_id from session user_id
 $lender_id = $user_id; // Ensure lender_id is correctly assigned
@@ -71,7 +71,6 @@ while ($row = $result->fetch_assoc()) {
     $notifications[] = $row;
 }
 $stmt->close();
-
 
 $conn->close();
 ?> 

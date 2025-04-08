@@ -349,7 +349,7 @@ You have <?= count($notifications) ?> new notifications
     </a>
   </li><!-- End Dashboard Nav -->
   <li class="nav-item">
-    <a class="nav-link collapsed" href="">
+    <a class="nav-link collapsed" href="./lender_notification.php">
       <i class="bi bi-person"></i>
       <span>Notification</span>
     </a>
@@ -380,10 +380,6 @@ You have <?= count($notifications) ?> new notifications
         </a>
       </li>
 
-      <a href="">
-          <i class="bi bi-circle"></i><span>Investment History</span>
-        </a>
-      </li>
       
     </ul>
   </li><!-- End Components Nav -->
