@@ -473,6 +473,7 @@ You have <?= count($notifications) ?> new notifications
                                         case 'approved': $statusClass = 'bg-success'; break;
                                         case 'pending': $statusClass = 'bg-warning'; break;
                                         case 'rejected': $statusClass = 'bg-danger'; break;
+                                        case 'funded': $statusClass = 'bg-success'; break;
                                     }
                                 ?>
                                 <span class="badge <?php echo $statusClass; ?>"><?php echo ucfirst($loan['status']); ?></span>

@@ -121,6 +121,7 @@ $lender = $result->fetch_assoc();
 $lender_name = $lender['name'];
 $stmt->close();
 
+
 // Insert notification
 $notification_message = "Loan approved and funded to {$borrower_name} by {$lender_name}.";
 $notification_type = "Loan Approved";
@@ -131,6 +132,7 @@ $stmt = $conn->prepare($insert_notification);
 $stmt->bind_param("iisss", $borrower_id, $loan_id, $notification_message, $notification_type, $notification_status);
 $stmt->execute();
 $stmt->close();
+
 
 // **Generate Repayment Reminder Notification**
 $due_date = date('d', strtotime('+6 months')); 
@@ -144,7 +146,6 @@ $stmt = $conn->prepare($insert_repayment_notification);
 $stmt->bind_param("iisss", $borrower_id, $loan_id, $repayment_message, $repayment_type, $repayment_status);
 $stmt->execute();
 $stmt->close();
-
 
 // Store the funded loan in the session
 if (!isset($_SESSION['funded_loans'])) {

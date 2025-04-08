@@ -369,10 +369,6 @@ $conn->close();
             </a>
           </li>
 
-          <a href="./repayment.php">
-              <i class="bi bi-circle"></i><span>Add Money</span>
-            </a>
-          </li>
           
         </ul>
       </li><!-- End Components Nav -->
