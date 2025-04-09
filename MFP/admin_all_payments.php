@@ -13,48 +13,39 @@ $user_name = $_SESSION['user_name'] ?? 'Guest';
 $user_role = $_SESSION['user_role'] ?? 'User'; // Default role if not set
 $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
 
-// Database configuration
 $host = "localhost";
 $dbname = "mfp_database";
 $username = "root";
 $password = "";
 
-// Create connection
+// Create a connection
 $conn = new mysqli($host, $username, $password, $dbname);
 
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+ 
 
+// Query to fetch lender name, borrower name, amount, status, and sent_at from payments
+$payments_query = "
+    SELECT 
+        lender.name AS lender_name,
+        borrower.name AS borrower_name,
+        p.amount,
+        p.status,
+        p.sent_at
+    FROM payments p
+    INNER JOIN users lender ON p.lender_id = lender.id
+    INNER JOIN users borrower ON p.borrower_id = borrower.id
+    ORDER BY p.sent_at DESC
+";
 
+$result = $conn->query($payments_query);
 
-
-// Handle highlight request
-if (isset($_POST['highlight_lender'])) {
-  $lender_id = intval($_POST['lender_id']);
-  
-  // Shift priorities for existing highlights
-  mysqli_query($conn, "UPDATE lenders SET highlight_priority = highlight_priority + 1 WHERE highlight_priority IS NOT NULL");
-  
-  // Set the selected lender to highest priority
-  mysqli_query($conn, "UPDATE lenders SET highlight_priority = 1 WHERE id = $lender_id");
-
-   // Approve all pending reviews for the highlighted lender
-   mysqli_query($conn, "UPDATE borrower_reviews SET status = 'approved' WHERE lender_id = $lender_id AND status = 'pending'");
-}
-
-// Fetch lender reviews from the database
-$query = "SELECT br.id, br.review_text, br.rating, br.created_at, br.status, 
-               b.user_id AS borrower_id, b.name AS borrower_name, 
-               l.id AS lender_id, l.name AS lender_name, l.highlight_priority 
-        FROM borrower_reviews br
-        JOIN borrower b ON br.borrower_id = b.user_id
-        JOIN lenders l ON br.lender_id = l.id
-        ORDER BY l.highlight_priority ASC, br.created_at DESC";
-
-$result = mysqli_query($conn, $query);
+$conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -66,7 +57,8 @@ $result = mysqli_query($conn, $query);
   <title>Dashboard -MFP</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
-  <!-- Fevicon -->
+
+  <!-- Favicons -->
   <link href="./assets/img/logo.png" rel="icon">
   <link href="./assets/img/logo.png" rel="apple-touch-icon">
 
@@ -189,7 +181,7 @@ $result = mysqli_query($conn, $query);
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./admin_home.php">
+        <a class="nav-link active" href="./admin_home.php">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
@@ -218,12 +210,12 @@ $result = mysqli_query($conn, $query);
       </li><!-- End Components Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link active" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-journal-text"></i><span>Transactions</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="forms-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./admin_all_payments.php">
+            <a href="./admin_all_payments.php" class="active">
               <i class="bi bi-circle"></i><span>All Payments</span>
             </a>
           </li>
@@ -238,7 +230,7 @@ $result = mysqli_query($conn, $query);
 
 
       <li class="nav-item">
-        <a class="nav-link active" href="./admin_reviews.php">
+        <a class="nav-link collapsed" href="./admin_reviews.php">
           <i class="bi bi-question-circle"></i>
           <span>Reviews</span>
         </a>
@@ -264,49 +256,49 @@ $result = mysqli_query($conn, $query);
 
   <main id="main" class="main">
   <div class="container mt-5">
-        <h2 class="text-center mb-4">Lender Reviews</h2>
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Borrower Name</th>
-                        <th>Lender Name</th>
-                        <th>Review</th>
-                        <th>Rating</th>
-                        <th>Created At</th>
-                        <th>Status</th>
-                        <th>Highlight</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($row = mysqli_fetch_assoc($result)) { ?>
-                        <tr class="<?php echo ($row['highlight_priority'] !== NULL) ? 'table-warning' : ''; ?>">
-                            <td><?php echo htmlspecialchars($row['id']); ?></td>
-                            <td><?php echo htmlspecialchars($row['borrower_name']); ?></td>
-                            <td><?php echo htmlspecialchars($row['lender_name']); ?></td>
-                            <td><?php echo nl2br(htmlspecialchars($row['review_text'])); ?></td>
-                            <td><?php echo htmlspecialchars($row['rating']); ?></td>
-                            <td><?php echo htmlspecialchars($row['created_at']); ?></td>
+    <h2 class="mb-4">Payments Overview</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered text-center align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Lender Name</th>
+                    <th>Borrower Name</th>
+                    <th>Amount (₹)</th>
+                    <th>Status</th>
+                    <th>Funded Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ($result && $result->num_rows > 0): ?>
+                    <?php while($row = $result->fetch_assoc()): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($row['lender_name']) ?></td>
+                            <td><?= htmlspecialchars($row['borrower_name']) ?></td>
+                            <td><?= number_format($row['amount'], 2) ?></td>
                             <td>
-                                <span class="badge bg-<?php echo ($row['status'] == 'approved') ? 'success' : (($row['status'] == 'pending') ? 'warning' : 'danger'); ?>">
-                                    <?php echo htmlspecialchars($row['status']); ?>
-                                </span>
+                                <?php
+                                    $statusClass = match($row['status']) {
+                                        'Pending' => 'text-warning',
+                                        'Completed' => 'text-success',
+                                        'Failed' => 'text-danger',
+                                        'Processing' => 'text-primary',
+                                        default => ''
+                                    };
+                                ?>
+                                <span class="<?= $statusClass ?> fw-bold"><?= htmlspecialchars($row['status']) ?></span>
                             </td>
-                            <td>
-                            <form method="POST">
-                                    <input type="hidden" name="lender_id" value="<?php echo $row['lender_id']; ?>">
-                                    <button type="submit" name="highlight_lender" class="btn btn-sm <?php echo ($row['highlight_priority'] !== NULL) ? 'btn-warning' : 'btn-primary'; ?>" <?php echo ($row['highlight_priority'] !== NULL) ? 'disabled' : ''; ?>>
-                                        <?php echo ($row['highlight_priority'] !== NULL) ? 'Highlighted' : 'Highlight'; ?>
-                                    </button>
-                                </form>
-                            </td>
+                            <td><?= date("d M Y, h:i A", strtotime($row['sent_at'])) ?></td>
                         </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr><td colspan="5">No payment records found.</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
+</div>
+
+  </section>
 </main><!-- End #main -->
 
   <!-- ======= Footer ======= -->
@@ -333,27 +325,6 @@ $result = mysqli_query($conn, $query);
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
 
-  <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            let highlightedRow = null; // Track the highlighted row
-
-            document.querySelectorAll(".highlight-btn").forEach(button => {
-                button.addEventListener("click", function() {
-                    if (highlightedRow) {
-                        highlightedRow.classList.remove("table-warning");
-                        highlightedRow.querySelector(".highlight-btn").textContent = "Highlight";
-                    }
-
-                    let row = this.closest("tr");
-                    row.classList.add("table-warning");
-                    this.textContent = "Highlighted";
-                    
-                    highlightedRow = row;
-                });
-            });
-        });
-    </script>
 </body>
 
 </html>
-

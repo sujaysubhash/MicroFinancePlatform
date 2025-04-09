@@ -30,9 +30,33 @@ $result1 = $stmt->get_result();
 while ($row = $result1->fetch_assoc()) {
     $notifications[] = $row;
 }
+
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+  // DB connection
+  $conn = new mysqli("localhost", "root", "", "mfp_database");
+  if ($conn->connect_error) {
+      die("Connection failed: " . $conn->connect_error);
+  }
+
+  $user_id = $_SESSION['user_id'] ?? 0;
+  $name = $_POST['name'] ?? '';
+  $email = $_POST['email'] ?? '';
+  $subject = $_POST['subject'] ?? '';
+  $message = $_POST['message'] ?? '';
+
+  if ($user_id && $name && $email && $subject && $message) {
+      $stmt = $conn->prepare("INSERT INTO messages (user_id, name, email, subject, message) VALUES (?, ?, ?, ?, ?)");
+      $stmt->bind_param("issss", $user_id, $name, $email, $subject, $message);
+      $stmt->execute();
+
+      $success = true;
+  } else {
+      $error = true;
+  }
+}
+
 $stmt->close();
-
-
 $conn->close();
 
 ?>
@@ -140,72 +164,6 @@ You have <?= count($notifications) ?> new notifications
 
 
 </li><!-- End Notification Nav -->
-
-    <li class="nav-item dropdown">
-
-      <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-        <i class="bi bi-chat-left-text"></i>
-        <span class="badge bg-success badge-number">3</span>
-      </a><!-- End Messages Icon -->
-
-      <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow messages">
-        <li class="dropdown-header">
-          You have 3 new messages
-          <a href="#"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
-        </li>
-        <li>
-          <hr class="dropdown-divider">
-        </li>
-
-        <li class="message-item">
-          <a href="#">
-            <img src="assets/img/messages-1.jpg" alt="" class="rounded-circle">
-            <div>
-              <h4>Maria Hudson</h4>
-              <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
-              <p>4 hrs. ago</p>
-            </div>
-          </a>
-        </li>
-        <li>
-          <hr class="dropdown-divider">
-        </li>
-
-        <li class="message-item">
-          <a href="#">
-            <img src="assets/img/messages-2.jpg" alt="" class="rounded-circle">
-            <div>
-              <h4>Anna Nelson</h4>
-              <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
-              <p>6 hrs. ago</p>
-            </div>
-          </a>
-        </li>
-        <li>
-          <hr class="dropdown-divider">
-        </li>
-
-        <li class="message-item">
-          <a href="#">
-            <img src="assets/img/messages-3.jpg" alt="" class="rounded-circle">
-            <div>
-              <h4>David Muldon</h4>
-              <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
-              <p>8 hrs. ago</p>
-            </div>
-          </a>
-        </li>
-        <li>
-          <hr class="dropdown-divider">
-        </li>
-
-        <li class="dropdown-footer">
-          <a href="#">Show all messages</a>
-        </li>
-
-      </ul><!-- End Messages Dropdown Items -->
-
-    </li><!-- End Messages Nav -->
 
     <li class="nav-item dropdown pe-3">
 
@@ -383,68 +341,54 @@ You have <?= count($notifications) ?> new notifications
 </ul>
 
 </aside><!-- End Sidebar-->
+<main id="main" class="main">
+  <section class="section contact">
+  <div class="row">
+    <div class="">
+      <div class="card p-4">
+      <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
+      <div class="row gy-4">
 
-  <main id="main" class="main">
-
-    <div class="pagetitle">
-      <h1>Contact</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-          <li class="breadcrumb-item">Pages</li>
-          <li class="breadcrumb-item active">Contact</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
-    <section class="section contact">
-
-      <div class="row">
-
-        <div class="">
-          <div class="card p-4">
-            <form action="./forms/contact.php" method="post" class="php-email-form" id="formSubmit">
-              <div class="row gy-4">
-
-                <div class="col-md-6">
-                  <input type="text" name="name" class="form-control" placeholder="Your Name" required>
-                </div>
-
-                <div class="col-md-6 ">
-                  <input type="email" class="form-control" name="email" placeholder="Your Email" required>
-                </div>
-
-                <div class="col-md-12">
-                  <input type="text" class="form-control" name="subject" placeholder="Subject" required>
-                </div>
-
-                <div class="col-md-12">
-                  <textarea class="form-control" name="message" rows="6" placeholder="Message" required></textarea>
-                </div>
-
-                <div class="col-md-12 text-center">
-                  <div class="loading">Loading</div>
-                  <div class="error-message"></div>
-                  <div class="sent-message">Your message has been sent. Thank you!</div>
-
-                  <button type="submit">Send Message</button>
-                </div>
-
-              </div>
-              <div id="successMessage" class="alert alert-success mt-3 text-center" style="display: none;">
-                Message sent sucessfully!
+            <div class="col-md-6">
+              <input type="text" name="name" class="form-control" placeholder="Your Name" required>
             </div>
-            </form>
+
+            <div class="col-md-6 ">
+              <input type="email" class="form-control" name="email" placeholder="Your Email" required>
+            </div>
+
+            <div class="col-md-12">
+              <input type="text" class="form-control" name="subject" placeholder="Subject" required>
+            </div>
+
+            <div class="col-md-12">
+              <textarea class="form-control" name="message" rows="6" placeholder="Message" required></textarea>
+            </div>
+
+            <div class="col-md-12 text-center">
+            <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm">
+              <i class="bi bi-send-fill me-2"></i> Send Message
+            </button>
+            </div>
           </div>
 
-        </div>
+          <!-- Success and error alerts -->
+          <?php if (!empty($success)): ?>
+            <div class="alert alert-success mt-3 text-center">
+              Message sent successfully!
+            </div>
+          <?php elseif (!empty($error)): ?>
+            <div class="alert alert-danger mt-3 text-center">
+              Failed to send message. Please try again.
+            </div>
+          <?php endif; ?>
 
+        </form>
       </div>
-
-    </section>
-
+    </div>
+  </div>
+</section>
   </main><!-- End #main -->
-
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
     <div class="copyright">

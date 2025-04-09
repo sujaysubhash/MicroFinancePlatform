@@ -206,7 +206,7 @@ $result = $conn->query($sql);
         </a>
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="">
+            <a href="./admin_all_payments.php">
               <i class="bi bi-circle"></i><span>All Payments</span>
             </a>
           </li>

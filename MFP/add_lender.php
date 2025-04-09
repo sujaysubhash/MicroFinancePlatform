@@ -248,7 +248,7 @@ $conn->close();
         </a>
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="">
+            <a href="./admin_all_payments.php">
               <i class="bi bi-circle"></i><span>All Payments</span>
             </a>
           </li>
@@ -289,33 +289,11 @@ $conn->close();
 
   <main id="main" class="main">
   <div class="container mt-5">
-    <h2 class="text-center mb-4">Lender/Borrower Messages</h2>
+    <h2 class="text-center mb-4">Add Lenders</h2>
 
     <div class="card shadow p-4">
         <table class="table table-striped">
-            <thead class="table-dark">
-                <tr>
-                    <th>User Name</th>
-                    <th>Email</th>
-                    <th>Subject</th>
-                    <th>Message</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>John Doe</td>
-                    <td>johndoe@example.com</td>
-                    <td>Loan Inquiry</td>
-                    <td>Need details about loan interest rates.</td>
-                </tr>
-                <tr>
-                    <td>Jane Smith</td>
-                    <td>janesmith@example.com</td>
-                    <td>Repayment Options</td>
-                    <td>Looking for flexible repayment plans.</td>
-                </tr>
-                <!-- More messages will be displayed here -->
-            </tbody>
+           
         </table>
     </div>
 </div>

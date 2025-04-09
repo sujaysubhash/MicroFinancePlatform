@@ -30,6 +30,9 @@ if ($conn->connect_error) {
 // SQL query to fetch lender details
 $sql = "SELECT id, name, interest_rate, available_funds, experience, rating FROM lenders";
 $result = $conn->query($sql);
+
+$message_query = "SELECT name, email, subject, message from messages";
+$message_result = $conn->query($message_query)
 ?>
 
 <!DOCTYPE html>
@@ -200,7 +203,7 @@ $result = $conn->query($sql);
         </a>
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="">
+            <a href="./admin_all_payments.php">
               <i class="bi bi-circle"></i><span>All Payments</span>
             </a>
           </li>
@@ -255,19 +258,21 @@ $result = $conn->query($sql);
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>John Doe</td>
-                    <td>johndoe@example.com</td>
-                    <td>Loan Inquiry</td>
-                    <td>Need details about loan interest rates.</td>
-                </tr>
-                <tr>
-                    <td>Jane Smith</td>
-                    <td>janesmith@example.com</td>
-                    <td>Repayment Options</td>
-                    <td>Looking for flexible repayment plans.</td>
-                </tr>
-                <!-- More messages will be displayed here -->
+               <?php
+                  if ($message_result && $message_result->num_rows > 0) {
+                      while ($row = $message_result->fetch_assoc()) {
+                          echo "<tr>";
+                            echo "<td>". htmlspecialchars($row['name']) ."</td>";
+                            echo "<td>". htmlspecialchars($row['email']) ."</td>";
+                            echo "<td>". htmlspecialchars($row['subject']) ."</td>";
+                            echo "<td>". htmlspecialchars($row['message']) ."</td>";
+                          echo "</tr>";
+                      }
+
+                  } else {
+                    echo "<tr> <td colspan='4' class='text-center'>No Messages Found.</td></tr>";
+                  }
+               ?>
             </tbody>
         </table>
     </div>
