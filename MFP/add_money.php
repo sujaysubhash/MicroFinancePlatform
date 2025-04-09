@@ -429,7 +429,7 @@ You have <?= count($notifications) ?> new notifications
 
 
   <li class="nav-item">
-    <a class="nav-link collapsed" href="">
+    <a class="nav-link collapsed" href="./lender_faq.php">
       <i class="bi bi-question-circle"></i>
       <span>F.A.Q</span>
     </a>

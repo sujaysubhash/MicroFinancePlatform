@@ -258,7 +258,7 @@ $conn->close();
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="./borrower-bankdetails.php">
+              <a class="dropdown-item d-flex align-items-center" href="./lender_bank_details.php">
                 <i class="bi bi-gear"></i>
                 <span>Account Settings</span>
               </a>
@@ -358,17 +358,17 @@ $conn->close();
       </li><!-- End Forms Nav -->
 
       <li class="nav-item">
-        <a class="nav-link active" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-bar-chart"></i><span>Profile</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="charts-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
+        <ul id="charts-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
           <li>
             <a href="./lender_profile.php">
               <i class="bi bi-circle"></i><span>Personal Details</span>
             </a>
           </li>
           <li>
-            <a href="./lender_bank_details.php" class="active">
+            <a href="./lender_bank_details.php">
               <i class="bi bi-circle"></i><span>Bank Details</span>
             </a>
           </li>
@@ -390,7 +390,7 @@ $conn->close();
       </li><!-- End F.A.Q Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./lender_contact.php">
+        <a class="nav-link active" href="./lender_contact.php">
           <i class="bi bi-envelope"></i>
           <span>Contact</span>
         </a>
@@ -407,77 +407,67 @@ $conn->close();
 
   </aside><!-- End Sidebar-->
 
+  
   <main id="main" class="main">
-  <div class="container mt-5">
-        <h2 class="text-center mb-4">Borrower Bank Details</h2>
-        <div class="card shadow p-4">
-            <h5 class="card-title">Your Bank Information</h5>
-            <table class="table table-striped mt-3">
-                <tbody>
-                    <tr>
-                        <th>Bank Name</th>
-                        <td id="bankName">State Bank of India</td>
-                    </tr>
-                    <tr>
-                        <th>Account Number</th>
-                        <td id="accountNumber">XXXX-XXXX-XXXX-1234</td>
-                    </tr>
-                    <tr>
-                        <th>IFSC Code</th>
-                        <td id="ifscCode">SBIN0001234</td>
-                    </tr>
-                    <tr>
-                        <th>Account Holder Name</th>
-                        <td id="accountHolder"><?php echo htmlspecialchars($user_name) ?></td>
-                    </tr>
-                    <tr>
-                        <th>Branch Name</th>
-                        <td id="branchName">Mumbai Main Branch</td>
-                    </tr>
-                </tbody>
-            </table>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateBankModal">Update Bank Details</button>
-        </div>
-    </div>
-    
-    <!-- Update Bank Details Modal -->
-    <div class="modal fade" id="updateBankModal" tabindex="-1" aria-labelledby="updateBankModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="updateBankModalLabel">Update Bank Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+    <div class="pagetitle">
+      <h1>Contact</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">Pages</li>
+          <li class="breadcrumb-item active">Contact</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section contact">
+
+      <div class="row">
+
+        <div class="">
+          <div class="card p-4">
+            <form action="./forms/contact.php" method="post" class="php-email-form" id="formSubmit">
+              <div class="row gy-4">
+
+                <div class="col-md-6">
+                  <input type="text" name="name" class="form-control" placeholder="Your Name" required>
                 </div>
-                <div class="modal-body">
-                    <form id="updateBankForm">
-                        <div class="mb-3">
-                            <label class="form-label">Bank Name</label>
-                            <input type="text" class="form-control" id="newBankName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Account Number</label>
-                            <input type="text" class="form-control" id="newAccountNumber" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">IFSC Code</label>
-                            <input type="text" class="form-control" id="newIfscCode" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Account Holder Name</label>
-                            <input type="text" class="form-control" id="newAccountHolder" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Branch Name</label>
-                            <input type="text" class="form-control" id="newBranchName" required>
-                        </div>
-                        <button type="submit" class="btn btn-success">Save Changes</button>
-                    </form>
+
+                <div class="col-md-6 ">
+                  <input type="email" class="form-control" name="email" placeholder="Your Email" required>
                 </div>
+
+                <div class="col-md-12">
+                  <input type="text" class="form-control" name="subject" placeholder="Subject" required>
+                </div>
+
+                <div class="col-md-12">
+                  <textarea class="form-control" name="message" rows="6" placeholder="Message" required></textarea>
+                </div>
+
+                <div class="col-md-12 text-center">
+                  <div class="loading">Loading</div>
+                  <div class="error-message"></div>
+                  <div class="sent-message">Your message has been sent. Thank you!</div>
+
+                  <button type="submit">Send Message</button>
+                </div>
+
+              </div>
+              <div id="successMessage" class="alert alert-success mt-3 text-center" style="display: none;">
+                Message sent sucessfully!
             </div>
+            </form>
+          </div>
+
         </div>
-    </div>
-    
-</main>
+
+      </div>
+
+    </section>
+
+  </main><!-- End #main -->
 
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">

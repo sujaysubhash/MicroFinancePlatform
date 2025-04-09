@@ -307,7 +307,7 @@ You have <?= count($notifications) ?> new notifications
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="./contact.php">
+              <a class="dropdown-item d-flex align-items-center" href="./lender_contact.php">
                 <i class="bi bi-question-circle"></i>
                 <span>Need Help?</span>
               </a>
@@ -422,14 +422,14 @@ You have <?= count($notifications) ?> new notifications
 
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="">
+        <a class="nav-link collapsed" href="./lender_faq.php">
           <i class="bi bi-question-circle"></i>
           <span>F.A.Q</span>
         </a>
       </li><!-- End F.A.Q Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="">
+        <a class="nav-link collapsed" href="./lender_contact.php">
           <i class="bi bi-envelope"></i>
           <span>Contact</span>
         </a>

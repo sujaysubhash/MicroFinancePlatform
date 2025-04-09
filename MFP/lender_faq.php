@@ -258,7 +258,7 @@ $conn->close();
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="./borrower-bankdetails.php">
+              <a class="dropdown-item d-flex align-items-center" href="./lender_bank_details.php">
                 <i class="bi bi-gear"></i>
                 <span>Account Settings</span>
               </a>
@@ -268,7 +268,7 @@ $conn->close();
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="./contact.php">
+              <a class="dropdown-item d-flex align-items-center" href="./lender_contact.php">
                 <i class="bi bi-question-circle"></i>
                 <span>Need Help?</span>
               </a>
@@ -358,17 +358,17 @@ $conn->close();
       </li><!-- End Forms Nav -->
 
       <li class="nav-item">
-        <a class="nav-link active" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-bar-chart"></i><span>Profile</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="charts-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
+        <ul id="charts-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
           <li>
             <a href="./lender_profile.php">
               <i class="bi bi-circle"></i><span>Personal Details</span>
             </a>
           </li>
           <li>
-            <a href="./lender_bank_details.php" class="active">
+            <a href="./lender_bank_details.php">
               <i class="bi bi-circle"></i><span>Bank Details</span>
             </a>
           </li>
@@ -383,7 +383,7 @@ $conn->close();
 
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./lender_faq.php">
+        <a class="nav-link active" href="./lender_faq.php">
           <i class="bi bi-question-circle"></i>
           <span>F.A.Q</span>
         </a>
@@ -409,75 +409,83 @@ $conn->close();
 
   <main id="main" class="main">
   <div class="container mt-5">
-        <h2 class="text-center mb-4">Borrower Bank Details</h2>
-        <div class="card shadow p-4">
-            <h5 class="card-title">Your Bank Information</h5>
-            <table class="table table-striped mt-3">
-                <tbody>
-                    <tr>
-                        <th>Bank Name</th>
-                        <td id="bankName">State Bank of India</td>
-                    </tr>
-                    <tr>
-                        <th>Account Number</th>
-                        <td id="accountNumber">XXXX-XXXX-XXXX-1234</td>
-                    </tr>
-                    <tr>
-                        <th>IFSC Code</th>
-                        <td id="ifscCode">SBIN0001234</td>
-                    </tr>
-                    <tr>
-                        <th>Account Holder Name</th>
-                        <td id="accountHolder"><?php echo htmlspecialchars($user_name) ?></td>
-                    </tr>
-                    <tr>
-                        <th>Branch Name</th>
-                        <td id="branchName">Mumbai Main Branch</td>
-                    </tr>
-                </tbody>
-            </table>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateBankModal">Update Bank Details</button>
+    <h2 class="text-center mb-4">Lender - Frequently Asked Questions</h2>
+    <div class="accordion" id="lenderFaqAccordion">
+      
+      <!-- Becoming a Lender -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="lenderHeadingOne">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#lenderCollapseOne" aria-expanded="true" aria-controls="lenderCollapseOne">
+            How can I become a lender on MFP?
+          </button>
+        </h2>
+        <div id="lenderCollapseOne" class="accordion-collapse collapse show" aria-labelledby="lenderHeadingOne" data-bs-parent="#lenderFaqAccordion">
+          <div class="accordion-body">
+            To become a lender, you must register on the platform, provide investment-related details, and upload required documents for verification.
+          </div>
         </div>
-    </div>
-    
-    <!-- Update Bank Details Modal -->
-    <div class="modal fade" id="updateBankModal" tabindex="-1" aria-labelledby="updateBankModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="updateBankModalLabel">Update Bank Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="updateBankForm">
-                        <div class="mb-3">
-                            <label class="form-label">Bank Name</label>
-                            <input type="text" class="form-control" id="newBankName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Account Number</label>
-                            <input type="text" class="form-control" id="newAccountNumber" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">IFSC Code</label>
-                            <input type="text" class="form-control" id="newIfscCode" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Account Holder Name</label>
-                            <input type="text" class="form-control" id="newAccountHolder" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Branch Name</label>
-                            <input type="text" class="form-control" id="newBranchName" required>
-                        </div>
-                        <button type="submit" class="btn btn-success">Save Changes</button>
-                    </form>
-                </div>
-            </div>
+      </div>
+      
+      <!-- Investment Process -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="lenderHeadingTwo">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lenderCollapseTwo" aria-expanded="false" aria-controls="lenderCollapseTwo">
+            How do I invest in a borrower's loan?
+          </button>
+        </h2>
+        <div id="lenderCollapseTwo" class="accordion-collapse collapse" aria-labelledby="lenderHeadingTwo" data-bs-parent="#lenderFaqAccordion">
+          <div class="accordion-body">
+            After approval, you can browse loan requests and choose the ones that match your risk profile and return expectations. You can fund all or a portion of a loan.
+          </div>
         </div>
+      </div>
+
+      <!-- Interest and Returns -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="lenderHeadingThree">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lenderCollapseThree" aria-expanded="false" aria-controls="lenderCollapseThree">
+            How is interest earned and when is it paid?
+          </button>
+        </h2>
+        <div id="lenderCollapseThree" class="accordion-collapse collapse" aria-labelledby="lenderHeadingThree" data-bs-parent="#lenderFaqAccordion">
+          <div class="accordion-body">
+            You earn interest based on the rate you specify during profile setup. Borrowers repay monthly, and your share (including interest) is credited accordingly.
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk and Default -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="lenderHeadingFour">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lenderCollapseFour" aria-expanded="false" aria-controls="lenderCollapseFour">
+            What happens if a borrower defaults?
+          </button>
+        </h2>
+        <div id="lenderCollapseFour" class="accordion-collapse collapse" aria-labelledby="lenderHeadingFour" data-bs-parent="#lenderFaqAccordion">
+          <div class="accordion-body">
+            In case of default, MFP initiates recovery measures including reminders, penalties, and legal actions. However, lending involves risk, and returns are not guaranteed.
+          </div>
+        </div>
+      </div>
+
+      <!-- Withdrawal and Fund Management -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="lenderHeadingFive">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lenderCollapseFive" aria-expanded="false" aria-controls="lenderCollapseFive">
+            Can I withdraw my unused funds?
+          </button>
+        </h2>
+        <div id="lenderCollapseFive" class="accordion-collapse collapse" aria-labelledby="lenderHeadingFive" data-bs-parent="#lenderFaqAccordion">
+          <div class="accordion-body">
+            Yes, any unused funds not tied up in active loans can be withdrawn at any time through your dashboard’s withdrawal section.
+          </div>
+        </div>
+      </div>
+
     </div>
-    
+  </div>
 </main>
+
 
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
