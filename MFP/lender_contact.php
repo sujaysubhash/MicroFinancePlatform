@@ -59,6 +59,32 @@ while ($row = $result1->fetch_assoc()) {
 }
 
 $stmt->close();
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+  // DB connection
+  $conn = new mysqli("localhost", "root", "", "mfp_database");
+  if ($conn->connect_error) {
+      die("Connection failed: " . $conn->connect_error);
+  }
+
+  $user_id = $_SESSION['user_id'] ?? 0;
+  $name = $_POST['name'] ?? '';
+  $email = $_POST['email'] ?? '';
+  $subject = $_POST['subject'] ?? '';
+  $message = $_POST['message'] ?? '';
+
+  if ($user_id && $name && $email && $subject && $message) {
+      $stmt = $conn->prepare("INSERT INTO messages (user_id, name, email, subject, message) VALUES (?, ?, ?, ?, ?)");
+      $stmt->bind_param("issss", $user_id, $name, $email, $subject, $message);
+      $stmt->execute();
+
+      $success = true;
+  } else {
+      $error = true;
+  }
+}
+
+
 $conn->close();
 ?>
 
@@ -268,7 +294,7 @@ $conn->close();
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="./contact.php">
+              <a class="dropdown-item d-flex align-items-center" href="./lender_contact.php">
                 <i class="bi bi-question-circle"></i>
                 <span>Need Help?</span>
               </a>
@@ -409,64 +435,52 @@ $conn->close();
 
   
   <main id="main" class="main">
+  <section class="section contact">
+  <div class="row">
+    <div class="">
+      <div class="card p-4">
+      <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
+      <div class="row gy-4">
 
-    <div class="pagetitle">
-      <h1>Contact</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-          <li class="breadcrumb-item">Pages</li>
-          <li class="breadcrumb-item active">Contact</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
-    <section class="section contact">
-
-      <div class="row">
-
-        <div class="">
-          <div class="card p-4">
-            <form action="./forms/contact.php" method="post" class="php-email-form" id="formSubmit">
-              <div class="row gy-4">
-
-                <div class="col-md-6">
-                  <input type="text" name="name" class="form-control" placeholder="Your Name" required>
-                </div>
-
-                <div class="col-md-6 ">
-                  <input type="email" class="form-control" name="email" placeholder="Your Email" required>
-                </div>
-
-                <div class="col-md-12">
-                  <input type="text" class="form-control" name="subject" placeholder="Subject" required>
-                </div>
-
-                <div class="col-md-12">
-                  <textarea class="form-control" name="message" rows="6" placeholder="Message" required></textarea>
-                </div>
-
-                <div class="col-md-12 text-center">
-                  <div class="loading">Loading</div>
-                  <div class="error-message"></div>
-                  <div class="sent-message">Your message has been sent. Thank you!</div>
-
-                  <button type="submit">Send Message</button>
-                </div>
-
-              </div>
-              <div id="successMessage" class="alert alert-success mt-3 text-center" style="display: none;">
-                Message sent sucessfully!
+            <div class="col-md-6">
+              <input type="text" name="name" class="form-control" placeholder="Your Name" required>
             </div>
-            </form>
+
+            <div class="col-md-6 ">
+              <input type="email" class="form-control" name="email" placeholder="Your Email" required>
+            </div>
+
+            <div class="col-md-12">
+              <input type="text" class="form-control" name="subject" placeholder="Subject" required>
+            </div>
+
+            <div class="col-md-12">
+              <textarea class="form-control" name="message" rows="6" placeholder="Message" required></textarea>
+            </div>
+
+            <div class="col-md-12 text-center">
+            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
+              <i class="bi bi-send-fill me-2"></i> Send Message
+            </button>
+            </div>
           </div>
 
-        </div>
+          <!-- Success and error alerts -->
+          <?php if (!empty($success)): ?>
+            <div class="alert alert-success mt-3 text-center">
+              Message sent successfully!
+            </div>
+          <?php elseif (!empty($error)): ?>
+            <div class="alert alert-danger mt-3 text-center">
+              Failed to send message. Please try again.
+            </div>
+          <?php endif; ?>
 
+        </form>
       </div>
-
-    </section>
-
+    </div>
+  </div>
+</section>
   </main><!-- End #main -->
 
   <!-- ======= Footer ======= -->
