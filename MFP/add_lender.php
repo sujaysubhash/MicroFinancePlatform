@@ -25,27 +25,32 @@ $conn = new mysqli($host, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-    
-// Initialize response message
+ 
 $response_message = "";
 
-// Check if the form is submitted
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'register') {
+    
+    $response_message = "Lender registration successful!";
     $name = $_POST['name'] ?? '';
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
+    $role = $_POST['role'] ?? '';
     $certificate_blob = NULL;
-    $role = "Lender"; // Default role
 
-    if (empty($name) || empty($email) || empty($password) || empty($confirm_password)) {
+    $interest_rate = $_POST['interest_rate'] ?? 0;
+    $available_funds = $_POST['available_funds'] ?? 0;
+    $experience = $_POST['experience'] ?? 0;
+    $rating = 0;
+
+    if (empty($name) || empty($email) || empty($password) || empty($confirm_password) || empty($role)) {
         $response_message = "All fields are required.";
     } elseif ($password !== $confirm_password) {
         $response_message = "Passwords do not match.";
     } else {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        
-        if (isset($_FILES['non_criminal_cert']) && $_FILES['non_criminal_cert']['size'] > 0) {
+
+        if ($role === "Lender" && isset($_FILES['non_criminal_cert']) && $_FILES['non_criminal_cert']['size'] > 0) {
             $file_type = $_FILES["non_criminal_cert"]["type"];
             $allowed_types = ["application/pdf", "image/png", "image/jpeg"];
 
@@ -56,24 +61,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        $sql = "INSERT INTO users (name, email, password,role, non_criminal_cert) VALUES (?,?, ?, ?, ?)";
-$stmt = $conn->prepare($sql);
+        $sql = "INSERT INTO users (name, email, password, role, non_criminal_cert) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param("sssss", $name, $email, $hashed_password, $role, $certificate_blob);
+            $stmt->send_long_data(4, $certificate_blob);
 
-if ($stmt) {
-    $stmt->bind_param("sssss", $name, $email, $hashed_password,$role, $certificate_blob);
-    $stmt->send_long_data(4, $certificate_blob); // Correct index (0-based)
+            if ($stmt->execute()) {
+                $user_id = $stmt->insert_id;
 
-    if ($stmt->execute()) {
-        $response_message = "Lender added successfully!";
-    } else {
-        $response_message = "Error: " . $stmt->error;
-    }
+                if (strtolower($role) === "lender") {
+                    $lender_sql = "INSERT INTO lenders (id, name, interest_rate, available_funds, experience, rating) VALUES (?, ?, ?, ?, ?, ?)";
+                    $lender_stmt = $conn->prepare($lender_sql);
+                    if ($lender_stmt) {
+                        $available_funds = floatval($available_funds);
+                        $lender_stmt->bind_param("isdiii", $user_id, $name, $interest_rate, $available_funds, $experience, $rating);
+                        if (!$lender_stmt->execute()) {
+                            $response_message = "Error inserting lender data: " . $lender_stmt->error;
+                        }
+                        $lender_stmt->close();
+                    } else {
+                        $response_message = "Error preparing lender statement: " . $conn->error;
+                    }
+                }
 
-    $stmt->close();
-} else {
-    $response_message = "Error preparing statement: " . $conn->error;
-}
-
+                $response_message = "Registration successful! New Lender is added.";
+            } else {
+                $response_message = "Error: " . $stmt->error;
+            }
+            $stmt->close();
+        } else {
+            $response_message = "Error preparing statement: " . $conn->error;
+        }
     }
 }
 $conn->close();
@@ -289,12 +308,56 @@ $conn->close();
 
   <main id="main" class="main">
   <div class="container mt-5">
-    <h2 class="text-center mb-4">Add Lenders</h2>
+  <form method="POST" action="add_lender.php" enctype="multipart/form-data">
+    
+          <input type="hidden" name="action" value="register">
+          <input type="hidden" name="role" value="Lender">
 
-    <div class="card shadow p-4">
-        <table class="table table-striped">
-           
-        </table>
+          <div class="mb-3">
+              <label class="form-label">Full Name</label>
+              <input type="text" name="name" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+              <label class="form-label">Email Address</label>
+              <input type="email" name="email" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" name="password" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+              <label class="form-label">Confirm Password</label>
+              <input type="password" name="confirm_password" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+              <label class="form-label">Interest Rate (%)</label>
+              <input type="number" step="0.1" name="interest_rate" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+              <label class="form-label">Available Funds</label>
+              <input type="number" name="available_funds" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+              <label class="form-label">Experience (Years)</label>
+              <input type="number" name="experience" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+              <label class="form-label">Upload Non-Criminal Certificate (PDF, PNG, JPEG)</label>
+              <input type="file" name="non_criminal_cert" class="form-control" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Register Lender</button>
+      </form>
+      <?php if (!empty($response_message)): ?>
+        <div class="alert alert-info"><?= htmlspecialchars($response_message) ?></div>
+      <?php endif; ?>
     </div>
 </div>
   </section>
@@ -323,6 +386,12 @@ $conn->close();
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+  <script>
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) alert.style.display = 'none';
+    }, 4000); // Hide after 4 seconds
+</script>
 
 </body>
 
