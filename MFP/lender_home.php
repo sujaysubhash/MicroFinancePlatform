@@ -77,7 +77,7 @@ $stmt->close();
 //Lender responded
 $query1 = "SELECT COUNT(*) AS responded_count 
           FROM loan_application 
-          WHERE lender_id = ? AND status = 'approved' OR status='funded' ";
+          WHERE lender_id = ? AND status = 'approved'";
 
 $stmt = $conn->prepare($query1);
 $stmt->bind_param("i", $lender_id);
@@ -424,7 +424,7 @@ $result = $conn->query($sql);
                 </div>
 
                 <div class="card-body">
-                  <h5 class="card-title">Responded <span>| Today</span></h5>
+                  <h5 class="card-title">Requests <span>| Today</span></h5>
 
                   <div class="d-flex align-items-center">
                     <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
