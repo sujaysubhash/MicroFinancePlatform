@@ -236,17 +236,17 @@ $conn->close();
         <div id="lenderFields" style="display: none;">
             <div class="mb-3">
                 <label for="interest rate" class="form-label">Interest Rate (%):</label>
-                <input class="form-control" placeholder="Interest Rate (%)" type="number" name="interest_rate" step="0.1">
+                <input class="form-control" placeholder="Interest Rate (%)" type="number" name="interest_rate" step="0.1" min="3" max="25">
             </div>
             
             <div class="mb-3">
                 <label for="availabe funds" class="form-label">Available Funds:</label>
-                <input class="form-control" placeholder="Available Funds" name="available_funds" type="number">
-                </div>
+                <input class="form-control" placeholder="Limited to ₹50000" name="available_funds" type="number" max="50000">
+            </div>
 
             <div class="mb-3">
                 <label for="experience" class="form-label">Experience (Years):</label>
-                <input class="form-control" placeholder="Experience (Years)" name="experience" type="number">
+                <input class="form-control" placeholder="Experience (Years)" name="experience" type="number" min="0" max="30">
             </div>
         </div>
         <div id="cert-upload-field" style="display: none;">

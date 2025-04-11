@@ -377,7 +377,6 @@ $conn->close();
 
   </aside><!-- End Sidebar-->
   <main id="main" class="main">
-  <!-- Wallet Balance on the Right Hand Side with Smaller Size -->
     <div class="container">
           <div class="row justify-content-end">
               <div class="col-lg-3">
@@ -390,11 +389,10 @@ $conn->close();
               </div>
           </div>
       </div>
-      <!-- Welcome Message Section -->
       <div class="pagetitle text-center" style="margin-top:-60px;">
           <h1 class="fw-bold text-primary">Welcome to Micro Finance Platform</h1>
           <p class="text-muted">Connecting borrowers and lenders directly with security and trust.</p>
-      </div><!-- End Page Title -->
+      </div>
 
       <section class="section about">
     <div class="container">
@@ -438,7 +436,7 @@ $conn->close();
 </div>
 
 
-</main><!-- End #main -->
+</main>
 
 
   <!-- ======= Footer ======= -->

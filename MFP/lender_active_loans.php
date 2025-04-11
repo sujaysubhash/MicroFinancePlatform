@@ -8,9 +8,9 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Fetch user's details from session
-$lender_id = $_SESSION['user_id']; 
+$user_id = $_SESSION['user_id'];
 $user_name = $_SESSION['user_name'] ?? 'Guest';
-$user_role = $_SESSION['user_role'] ?? 'User';
+$user_role = $_SESSION['user_role'] ?? 'User'; // Default role if not set
 $user_email = $_SESSION['user_email'] ?? 'user@gmail.com';
 
 // Database connection
@@ -26,42 +26,38 @@ if ($conn->connect_error) {
 }
 
 
-// SQL query to fetch user email based on session user ID
-$sql = "SELECT email FROM users WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $lender_id); // Bind user ID
-$stmt->execute();
-$result = $stmt->get_result();
+// Assign lender_id from session user_id
+$lender_id = $user_id; // Ensure lender_id is correctly assigned
 
-if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    $_SESSION['user_email'] = $row['email']; // Store email in session
-} else {
-    $_SESSION['user_email'] = 'Not Found'; // Default if email is not found
-}
-
-$user_email = $_SESSION['user_email'];
-
-
-// Fetch notifications for the logged-in borrower
+// Fetch notifications for the logged-in lender
 $notifications = [];
-$query1 = "SELECT n.type, n.message, n.created_at FROM notifications n 
+$query = "SELECT n.type, n.created_at FROM notifications n 
           JOIN loan_application l ON n.loan_id = l.loanid 
           WHERE l.lender_id = ? 
           ORDER BY n.created_at DESC";
 
-$stmt = $conn->prepare($query1);
+$stmt = $conn->prepare($query);
 $stmt->bind_param("i", $lender_id);
 $stmt->execute();
-$result1 = $stmt->get_result();
-while ($row = $result1->fetch_assoc()) {
+$result = $stmt->get_result();
+
+while ($row = $result->fetch_assoc()) {
     $notifications[] = $row;
 }
 
-$stmt->close();
-$conn->close();
-?>
 
+//  active loans where lender_responded = 'true'
+$sql = "SELECT loanid, borrower, requested_loan_amount, interest_rate, loan_duration 
+        FROM loan_application 
+        WHERE lender_id = ? AND lender_responded = 'true'";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $lender_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+
+?> 
 
 
 <!DOCTYPE html>
@@ -71,14 +67,13 @@ $conn->close();
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Lender Profile</title>
+  <title>Lender Dashboard</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
-  <!-- Fevicon -->
+  <!-- Favicons -->
   <link href="./assets/img/logo.png" rel="icon">
   <link href="./assets/img/logo.png" rel="apple-touch-icon">
-
 
   <!-- Google Fonts -->
   <link href="https://fonts.gstatic.com" rel="preconnect">
@@ -93,13 +88,12 @@ $conn->close();
   <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
   <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
 
-  <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
+
 </head>
 
 <body>
 
-  
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
 
@@ -119,7 +113,7 @@ $conn->close();
     </div><!-- End Search Bar -->
 
     <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
+       <ul class="d-flex align-items-center">
 
                 <li class="nav-item d-block d-lg-none">
                   <a class="nav-link nav-icon search-bar-toggle " href="#">
@@ -159,12 +153,21 @@ $conn->close();
             <?php endif; ?>
             
             <li class="dropdown-footer">
-                <a href="./lender_notification.php">Show all notifications</a>
+                <a href="#">Show all notifications</a>
             </li>
     </ul>
 
         </li><!-- End Notification Nav -->
 
+        <li class="nav-item dropdown">
+
+          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-chat-left-text"></i>
+            <span class="badge bg-success badge-number">3</span>
+          </a><!-- End Messages Icon -->
+
+
+        </li><!-- End Messages Nav -->
 
         <li class="nav-item dropdown pe-3">
 
@@ -203,7 +206,7 @@ $conn->close();
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="./lender_contact.php">
+              <a class="dropdown-item d-flex align-items-center" href="./contact.php">
                 <i class="bi bi-question-circle"></i>
                 <span>Need Help?</span>
               </a>
@@ -253,22 +256,23 @@ $conn->close();
       </li><!-- End Profile Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link active" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-menu-button-wide"></i><span>Investment</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="components-nav" class="nav-content active " data-bs-parent="#sidebar-nav">
           <li>
 
 
-            <a href="./lender_active_loans.php">
+            <a href="./lender_active_loans.php" class="active">
               <i class="bi bi-circle"></i><span>Active Loans</span>
             </a>
           </li>
 
-          <a href="./lender_page_amount_request.php">
+          <a href="./lender_page_amount_request.php" >
               <i class="bi bi-circle"></i><span>Amount Request</span>
             </a>
           </li>
+
           
         </ul>
       </li><!-- End Components Nav -->
@@ -296,9 +300,9 @@ $conn->close();
         <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-bar-chart"></i><span>Profile</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="charts-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="./lender_profile.php">
+            <a href="">
               <i class="bi bi-circle"></i><span>Personal Details</span>
             </a>
           </li>
@@ -318,14 +322,14 @@ $conn->close();
 
 
       <li class="nav-item">
-        <a class="nav-link active" href="./lender_faq.php">
+        <a class="nav-link collapsed" href="./lender_faq.php">
           <i class="bi bi-question-circle"></i>
           <span>F.A.Q</span>
         </a>
       </li><!-- End F.A.Q Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="./lender_contact.php">
+        <a class="nav-link collapsed" href="">
           <i class="bi bi-envelope"></i>
           <span>Contact</span>
         </a>
@@ -343,89 +347,49 @@ $conn->close();
   </aside><!-- End Sidebar-->
 
   <main id="main" class="main">
-  <div class="container mt-5">
-    <h2 class="text-center mb-4">Lender - Frequently Asked Questions</h2>
-    <div class="accordion" id="lenderFaqAccordion">
-      
-      <!-- Becoming a Lender -->
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="lenderHeadingOne">
-          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#lenderCollapseOne" aria-expanded="true" aria-controls="lenderCollapseOne">
-            How can I become a lender on MFP?
-          </button>
-        </h2>
-        <div id="lenderCollapseOne" class="accordion-collapse collapse show" aria-labelledby="lenderHeadingOne" data-bs-parent="#lenderFaqAccordion">
-          <div class="accordion-body">
-            To become a lender, you must register on the platform, provide investment-related details, and upload required documents for verification.
-          </div>
-        </div>
-      </div>
-      
-      <!-- Investment Process -->
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="lenderHeadingTwo">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lenderCollapseTwo" aria-expanded="false" aria-controls="lenderCollapseTwo">
-            How do I invest in a borrower's loan?
-          </button>
-        </h2>
-        <div id="lenderCollapseTwo" class="accordion-collapse collapse" aria-labelledby="lenderHeadingTwo" data-bs-parent="#lenderFaqAccordion">
-          <div class="accordion-body">
-            After approval, you can browse loan requests and choose the ones that match your risk profile and return expectations. You can fund all or a portion of a loan.
-          </div>
-        </div>
-      </div>
 
-      <!-- Interest and Returns -->
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="lenderHeadingThree">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lenderCollapseThree" aria-expanded="false" aria-controls="lenderCollapseThree">
-            How is interest earned and when is it paid?
-          </button>
-        </h2>
-        <div id="lenderCollapseThree" class="accordion-collapse collapse" aria-labelledby="lenderHeadingThree" data-bs-parent="#lenderFaqAccordion">
-          <div class="accordion-body">
-            You earn interest based on the rate you specify during profile setup. Borrowers repay monthly, and your share (including interest) is credited accordingly.
-          </div>
-        </div>
-      </div>
+  <div class="container py-5">
+        <h2 class="mb-4">Hi, <?php echo htmlspecialchars($user_name); ?>!</h2>
+        <h4 class="mb-3 text-primary">Your Active Loans</h4>
 
-      <!-- Risk and Default -->
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="lenderHeadingFour">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lenderCollapseFour" aria-expanded="false" aria-controls="lenderCollapseFour">
-            What happens if a borrower defaults?
-          </button>
-        </h2>
-        <div id="lenderCollapseFour" class="accordion-collapse collapse" aria-labelledby="lenderHeadingFour" data-bs-parent="#lenderFaqAccordion">
-          <div class="accordion-body">
-            In case of default, MFP initiates recovery measures including reminders, penalties, and legal actions. However, lending involves risk, and returns are not guaranteed.
-          </div>
-        </div>
-      </div>
+        <?php if ($result->num_rows > 0): ?>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Loan ID</th>
+                            <th>Borrower Name</th>
+                            <th>Requested Amount</th>
+                            <th>Interest Rate (%)</th>
+                            <th>Duration (months)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = $result->fetch_assoc()): ?>
+                            <tr>
+                                <td><?php echo $row['loanid']; ?></td>
+                                <td><?php echo htmlspecialchars($row['borrower']); ?></td>
+                                <td>₹<?php echo number_format($row['requested_loan_amount'], 2); ?></td>
+                                <td><?php echo $row['interest_rate']; ?></td>
+                                <td><?php echo $row['loan_duration']; ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
+            <div class="alert alert-info">No active loans found for you.</div>
+        <?php endif; ?>
 
-      <!-- Withdrawal and Fund Management -->
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="lenderHeadingFive">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lenderCollapseFive" aria-expanded="false" aria-controls="lenderCollapseFive">
-            Can I withdraw my unused funds?
-          </button>
-        </h2>
-        <div id="lenderCollapseFive" class="accordion-collapse collapse" aria-labelledby="lenderHeadingFive" data-bs-parent="#lenderFaqAccordion">
-          <div class="accordion-body">
-            Yes, any unused funds not tied up in active loans can be withdrawn at any time through your dashboard’s withdrawal section.
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</main>
-
+    </div>            
+  </main>
 
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
     <div class="copyright">
       &copy; Copyright <strong><span>Micro Finance Platform</span></strong>. All Rights Reserved
+    </div>
+    <div class="credits">
     </div>
   </footer><!-- End Footer -->
 
@@ -441,21 +405,39 @@ $conn->close();
   <script src="assets/vendor/tinymce/tinymce.min.js"></script>
   <script src="assets/vendor/php-email-form/validate.js"></script>
 
+  <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
-      <script>
-        document.getElementById("updateForm").addEventListener("submit", function(event) {
-            event.preventDefault(); // Prevent actual form submission
-        
-            // Display the success message
-            document.getElementById("successMessage").style.display = "block";
-        
-            // Optionally, hide the message after a few seconds
-            setTimeout(function() {
-                document.getElementById("successMessage").style.display = "none";
-            }, 2000);
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const fundedLoans = <?php echo json_encode($_SESSION['funded_loans'] ?? []); ?>;
+
+        document.querySelectorAll(".fund-loan-btn").forEach(button => {
+            const loanId = button.getAttribute("data-loanid");
+
+            if (fundedLoans.includes(loanId)) {
+                button.disabled = true;
+                button.textContent = "Funded";
+            }
+
+            button.addEventListener("click", function(event) {
+                event.preventDefault();
+                button.disabled = true;
+                button.textContent = "Funded";
+
+                setTimeout(() => {
+                    button.closest("form").submit();
+                }, 500);
+            });
         });
-    </script>
-      
+    });
+</script>
+
 </body>
 
 </html>
+
+<?php
+// Close connection
+$conn->close();
+?>

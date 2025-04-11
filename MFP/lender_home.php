@@ -77,7 +77,7 @@ $stmt->close();
 //Lender responded
 $query1 = "SELECT COUNT(*) AS responded_count 
           FROM loan_application 
-          WHERE lender_id = ? AND lender_responded = 'true'";
+          WHERE lender_id = ? AND status = 'approved' OR status='funded' ";
 
 $stmt = $conn->prepare($query1);
 $stmt->bind_param("i", $lender_id);
@@ -306,7 +306,7 @@ $result = $conn->query($sql);
           <li>
 
 
-            <a href="./lender_payment_history.php">
+            <a href="./lender_active_loans.php">
               <i class="bi bi-circle"></i><span>Active Loans</span>
             </a>
           </li>
