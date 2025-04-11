@@ -61,7 +61,7 @@ $stmt->fetch();
 $stmt->close();
 
 // Fetch notifications only for loans funded by this lender
-$query = "SELECT n.message, n.type, n.created_at FROM notifications n 
+$query = "SELECT n.id, n.message, n.type, n.created_at FROM notifications n 
           JOIN loan_application l ON n.loan_id = l.loanid 
           WHERE l.lender_id = ? 
           ORDER BY n.created_at DESC";
@@ -102,7 +102,6 @@ $conn->close();
   <link href="https://fonts.gstatic.com" rel="preconnect">
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
 
-  <!-- Vendor CSS Files -->
   <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
   <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
@@ -395,9 +394,14 @@ $conn->close();
                                 <i class="bi bi-clock"></i> 
                                 <?= date("F j, Y, g:i a", strtotime($notification['created_at'])); ?>
                             </p>
+                            <!-- Dismiss Button -->
+                            <button class="btn btn-outline-danger mt-2 dismiss-btn" data-id="<?= $notification['id']; ?>">
+                                <i class="bi bi-trash"></i> Dismiss
+                            </button>
                         </div>
                     </div>
                 <?php endforeach; ?>
+                
             </div>
         <?php endif; ?>
     </div>
@@ -415,8 +419,31 @@ $conn->close();
   </footer><!-- End Footer -->
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $(".dismiss-btn").click(function(){
+            var notificationId = $(this).data("id");
+            var notificationCard = $(this).closest(".card");
 
-  <!-- Vendor JS Files -->
+            $.ajax({
+                url: "delete_notification.php", // same PHP file used for borrower
+                type: "POST",
+                data: { id: notificationId },
+                success: function(response) {
+                    if (response.trim() === "success") {
+                        notificationCard.fadeOut("slow", function() {
+                            $(this).remove();
+                        });
+                    } else {
+                        alert("Error deleting notification.");
+                    }
+                }
+            });
+        });
+    });
+</script>
+
   <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
   <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="assets/vendor/chart.js/chart.umd.js"></script>
@@ -426,7 +453,6 @@ $conn->close();
   <script src="assets/vendor/tinymce/tinymce.min.js"></script>
   <script src="assets/vendor/php-email-form/validate.js"></script>
 
-  <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
 
 </body>

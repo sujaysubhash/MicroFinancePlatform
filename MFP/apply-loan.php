@@ -1,9 +1,8 @@
 <?php
 session_start(); // Start session
 
-// Check if the user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php"); // Redirect to login page if not logged in
+    header("Location: login.php"); 
     exit();
 }
 
@@ -146,7 +145,6 @@ $stmt->close();
   <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
   <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
 
-  <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
 
 </head>
@@ -293,7 +291,7 @@ You have <?= count($notifications) ?> new notifications
     </a>
   </li><!-- End Dashboard Nav -->
   <li class="nav-item">
-    <a class="nav-link collapsed" href="./notifications.php">
+    <a class="nav-link collapsed" href="./borrower_notification.php">
       <i class="bi bi-person"></i>
       <span>Notification</span>
     </a>
@@ -515,7 +513,6 @@ You have <?= count($notifications) ?> new notifications
   <script src="assets/vendor/tinymce/tinymce.min.js"></script>
   <script src="assets/vendor/php-email-form/validate.js"></script>
 
-  <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
 
 </body>

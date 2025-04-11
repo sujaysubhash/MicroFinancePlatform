@@ -127,7 +127,6 @@ $conn->close();
   <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
   <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
 
-  <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
   <style>
     .sticky-aside {
@@ -470,7 +469,6 @@ You have <?= count($notifications) ?> new notifications
   <script src="assets/vendor/php-email-form/validate.js"></script>
 
 
-  <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
 
 </body>

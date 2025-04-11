@@ -344,11 +344,6 @@ You have <?= count($notifications) ?> new notifications
           <i class="bi bi-circle"></i><span>My Loans</span>
         </a>
       </li>
-
-      <a href="./repayment.php">
-          <i class="bi bi-circle"></i><span>Repayments</span>
-        </a>
-      </li>
       
     </ul>
   </li><!-- End Components Nav -->
@@ -440,7 +435,6 @@ You have <?= count($notifications) ?> new notifications
                     <div class="p-3">
                       <button class="btn dismiss-btn" data-id="<?php echo $row['id']; ?>">Dismiss</button> 
                     </div>
-
                 </div>
               
                 <?php
