@@ -77,7 +77,7 @@ $stmt->close();
 //Lender responded
 $query1 = "SELECT COUNT(*) AS responded_count 
           FROM loan_application 
-          WHERE lender_id = ? AND status = 'approved'";
+          WHERE lender_id = ? AND status = 'pending'  ";
 
 $stmt = $conn->prepare($query1);
 $stmt->bind_param("i", $lender_id);

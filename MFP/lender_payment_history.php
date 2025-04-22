@@ -398,14 +398,22 @@ You have <?= count($notifications) ?> new notifications
                       $total_paid = $loan['paid_months'] * $loan['monthly_installment'];
                   ?>
                   <p><strong>Total Amount Paid:</strong> ₹<?php echo number_format($total_paid, 2); ?></p>
-                        
-                  
+                  <!-- Mail to the borrower -->
+                  <form action="mail.php" method="post">
+                      <input type="hidden" name="email" value="<?php echo $loan['borrower_email']; ?>">
+                     <input type="hidden" name="borrower" value="<?php echo $loan['borrower_name']; ?>">
+                     <input type="hidden" name="loanid" value="<?php echo $loan['loanid']; ?>">
+                     <input type="hidden" name="lender" value="<?php echo $loan['lender_name']; ?>">
+                     <input type="hidden" name="amount" value="<?php echo $loan['total_repayable_amount']; ?>">
+                     <button type="submit" class="btn btn-danger btn-sm">Send Payment Warning</button>
+                  </form>
+
                   <?php
                   $paid_months = isset($loan['paid_months']) ? (int)$loan['paid_months'] : 0;
                   $loan_duration = isset($loan['loan_duration']) ? (int)$loan['loan_duration'] : 1;
 
                   $progress = ($loan_duration > 0) ? ($paid_months / $loan_duration) * 100 : 0;
-                  $progress = max(0, min(100, $progress)); // Clamp between 0-100
+                  $progress = max(0, min(100, $progress)); 
                   ?>
 
                   

@@ -376,6 +376,17 @@ You have <?= count($notifications) ?> new notifications
                         ?>
                         <p><strong>Total Amount Paid:</strong> ₹<?php echo number_format($total_paid, 2); ?></p>
                         
+                        <!-- Contract -->
+                        <form action="contract.php" method="post" target="_blank">
+                          <input type="hidden" name="loanid" value="<?php echo $loan['loanid']; ?>">
+                          <input type="hidden" name="lender" value="<?php echo htmlspecialchars($loan['lender_name']); ?>">
+                          <input type="hidden" name="borrower" value="<?php echo $user_name?>">
+                          <input type="hidden" name="requested_loan_amount" value="<?php echo $loan['requested_loan_amount']; ?>">
+                          <input type="hidden" name="interest_rate" value="<?php echo $loan['interest_rate']; ?>">
+                          <input type="hidden" name="loan_duration" value="<?php echo $loan['loan_duration']; ?>">
+    
+                          <button type="submit" class="btn btn-sm btn-outline-primary mt-3">View Contract</button>
+                      </form>
                     </div>
                     <div>
                         <h5 class="text-end">Wallet Balance</h5>

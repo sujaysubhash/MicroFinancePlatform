@@ -54,6 +54,25 @@ $loan_amount = $loan['requested_loan_amount'];
 $borrower_id = $loan['borrower_id'];
 $stmt->close();
 
+
+$borrower_wallet_query = 'SELECT wallet_balance FROM borrower WHERE user_id = ?';
+$stmt = $conn->prepare($borrower_wallet_query);
+$stmt->bind_param("i", $borrower_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+
+$row = $result->fetch_assoc();
+$wallet_balance = $row['wallet_balance'];
+
+$updated_wallet_balance = $wallet_balance + $loan_amount;
+
+/// Updating the borrower wallet
+$update_borrower_wallet = 'UPDATE borrower SET wallet_balance = ? where user_id = ?';
+$stmt = $conn->prepare($update_borrower_wallet);
+$stmt->bind_param("di", $updated_wallet_balance, $borrower_id);
+$stmt->execute();
+
 // Fetch lender wallet balance
 $lender_query = "SELECT wallet_balance FROM lenders WHERE id = ?";
 $stmt = $conn->prepare($lender_query);
@@ -160,6 +179,7 @@ if (!isset($_SESSION['funded_loans'])) {
     $_SESSION['funded_loans'] = [];
 }
 $_SESSION['funded_loans'][] = $loan_id;
+
 
 $conn->close();
 

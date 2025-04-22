@@ -393,6 +393,14 @@ $conn->close();
                                     <input type="hidden" name="loanid" value="<?php echo $loan['loanid']; ?>">
                                     <button type="submit" class="btn btn-success btn-sm fund-loan-btn">Fund Loan</button>
                                 </form>
+                                 <!-- Show View Contract only if loan is funded -->
+                                <?php if ($loan['status'] === 'funded'): ?>
+                                    <a href="contract.php?loanid=<?php echo $loan['loanid']; ?>"
+                                       target="_blank"
+                                       class="btn btn-info btn-sm mt-2">
+                                       View Contract
+                                    </a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

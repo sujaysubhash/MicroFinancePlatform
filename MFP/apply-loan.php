@@ -37,20 +37,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apply_loan'])) {
     $income = $_POST['income'];
     $credit_score = $_POST['credit_score'] ?? rand(300, 900); // Generate if not provided
     $loan_amount = $_POST['loan_amount']; // Fetch requested loan amount
+    $pan_number = $_POST['pan_number'];
 
     // Ensure borrower exists in the borrower table
     $check_borrower = $conn->query("SELECT user_id FROM borrower WHERE user_id = '$user_id'");
     if ($check_borrower->num_rows == 0) {
         $insert_borrower = "INSERT INTO borrower (user_id, name, email, employment_status, income, credit_score, loan_status, funded_amount, loan_applied_count, wallet_balance) 
-                            VALUES ('$user_id', '$user_name', '$user_email', '$employment_status', '$income', '$credit_score', 'pending', 0, 1, 0)";
+                            VALUES ('$user_id', '$user_name', '$user_email', '$employment_status', '$income', '$credit_score', 'pending', 0, 1, 0, ' $pan_number')";
         if (!$conn->query($insert_borrower)) {
             die("Error inserting borrower: " . $conn->error);
         }
     } else {
         // If borrower exists, update details
         $update_borrower = "UPDATE borrower SET employment_status='$employment_status', income='$income', 
-                            credit_score='$credit_score', loan_status='pending', loan_applied_count = loan_applied_count + 1 
-                            WHERE user_id='$user_id'";
+                            credit_score='$credit_score', loan_status='pending', loan_applied_count = loan_applied_count + 1, pan_number = '$pan_number'
+                             WHERE user_id='$user_id'";
         if (!$conn->query($update_borrower)) {
             die("Error updating borrower: " . $conn->error);
         }
@@ -461,6 +462,11 @@ You have <?= count($notifications) ?> new notifications
                         </div>
 
                         <div class="mb-3">
+                          <label for="pan_number" class="form-label">PAN Number</label>
+                          <input type="text" class="form-control" name="pan_number"  maxlength="10" minlength="10" pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" required>
+                        </div>
+
+                        <div class="mb-3">
                           <label for="available_funds" class="form-label">Available Funds</label>
                           <input type="text" class="form-control" id="available_funds_<?php echo $row['id']; ?>" value="<?php echo $row['available_funds']; ?>" readonly>
                         </div>
@@ -514,7 +520,17 @@ You have <?= count($notifications) ?> new notifications
   <script src="assets/vendor/php-email-form/validate.js"></script>
 
   <script src="assets/js/main.js"></script>
-
+  <script>
+    function validateForm() {
+    const pan = document.getElementById("pan_number").value;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    if (!panRegex.test(pan)) {
+      alert("Invalid PAN number. It should be in format: AAAAA9999A");
+      return false;
+    }
+    return true;
+    }
+  </script>
 </body>
 
 </html>

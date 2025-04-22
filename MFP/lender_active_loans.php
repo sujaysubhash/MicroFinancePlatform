@@ -361,18 +361,32 @@ $result = $stmt->get_result();
                             <th>Requested Amount</th>
                             <th>Interest Rate (%)</th>
                             <th>Duration (months)</th>
+                            <th>Contract</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = $result->fetch_assoc()): ?>
-                            <tr>
-                                <td><?php echo $row['loanid']; ?></td>
-                                <td><?php echo htmlspecialchars($row['borrower']); ?></td>
-                                <td>₹<?php echo number_format($row['requested_loan_amount'], 2); ?></td>
-                                <td><?php echo $row['interest_rate']; ?></td>
-                                <td><?php echo $row['loan_duration']; ?></td>
-                            </tr>
-                        <?php endwhile; ?>
+                    <?php while ($row = $result->fetch_assoc()): ?>
+    <tr>
+        <td><?php echo $row['loanid']; ?></td>
+        <td><?php echo htmlspecialchars($row['borrower']); ?></td>
+        <td>₹<?php echo number_format($row['requested_loan_amount'], 2); ?></td>
+        <td><?php echo $row['interest_rate']; ?></td>
+        <td><?php echo $row['loan_duration']; ?></td>
+        <td>
+            <form action="contract.php" method="post" target="_blank">
+                <input type="hidden" name="loanid" value="<?php echo $row['loanid']; ?>">
+                <input type="hidden" name="borrower" value="<?php echo $row['borrower']; ?>">
+                <input type="hidden" name="requested_loan_amount" value="<?php echo $row['requested_loan_amount']; ?>">
+                <input type="hidden" name="interest_rate" value="<?php echo $row['interest_rate']; ?>">
+                <input type="hidden" name="loan_duration" value="<?php echo $row['loan_duration']; ?>">
+                <input type="hidden" name="lender" value="<?php echo $user_name; ?>">
+
+                <button type="submit" class="btn btn-sm btn-primary">View Contract</button>
+            </form>
+        </td>
+    </tr>
+<?php endwhile; ?>
+
                     </tbody>
                 </table>
             </div>
